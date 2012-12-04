@@ -1,0 +1,8 @@
+.#*
+*~
+\#*
+.DS_Store
+/.emacs*
+*.log
+__MACOSX
+*.sw*
