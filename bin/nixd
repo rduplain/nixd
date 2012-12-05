@@ -1,11 +1,10 @@
 #!/bin/bash
 # nixd main program for relatively self-contained configuration management.
 
-declare PROG # Set in main function.
-
-boot() {
-    echo "TODO"
-}
+# Useful environment variables, set in main function.
+declare PROG
+declare PROG_DIR
+declare PREFIX
 
 usage() {
     # Print program usage to stderr and exit with status code 1.
@@ -13,7 +12,7 @@ usage() {
     exec >&2 # Redirect all further stdout to stderr.
 
     if [ $# -gt 0 ]; then
-        # Print message argument.
+        # Print message argument, if given.
         echo "$@"
         echo
     fi
@@ -27,8 +26,17 @@ usage() {
     exit 1
 }
 
+boot() {
+    export PREFIX
+    echo "PREFIX: $PREFIX"
+    echo "TODO"
+}
+
 main() {
-    PROG=${0##*/} # basename of this executable.
+    PROG="$( basename "${BASH_SOURCE[0]}" )"
+    local script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    PROG_DIR="$( dirname "$script_dir" )"
+    PREFIX=$PROG_DIR/usr
 
     # Print usage and exit if there are no arguments.
     if [ $# -eq 0 ]; then
