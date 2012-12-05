@@ -1,2 +1,48 @@
 #!/bin/bash
-# nixd main program.
+# nixd main program for relatively self-contained configuration management.
+
+declare PROG # Set in main function.
+
+boot() {
+    echo "TODO"
+}
+
+usage() {
+    # Print program usage to stderr and exit with status code 1.
+
+    exec >&2 # Redirect all further stdout to stderr.
+
+    if [ $# -gt 0 ]; then
+        # Print message argument.
+        echo "$@"
+        echo
+    fi
+
+    echo "usage: $PROG <command>"
+    echo
+    echo "Configurations are in $PROG/etc/, installations are in $PROG/usr/."
+    echo
+    echo "Commands:"
+    echo "boot - Initialize stack specified in configuration."
+    exit 1
+}
+
+main() {
+    PROG=${0##*/} # basename of this executable.
+
+    # Print usage and exit if there are no arguments.
+    if [ $# -eq 0 ]; then
+        usage
+    fi
+
+    local command=$1
+    shift;
+
+    if [ "`type -t $command`" != "function" ]; then
+        usage "$PROG: $command is not a valid command."
+    fi
+
+    $command "$@"
+}
+
+main "$@"
