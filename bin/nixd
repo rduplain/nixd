@@ -1,10 +1,15 @@
 #!/bin/bash
 # nixd main program for relatively self-contained configuration management.
 
-# Useful environment variables, set in main function.
+# Environment variables passed to package scripts, supplied in boot function.
+declare NIXD_PREFIX # prefix to use in installation, absolute nixd/usr (static)
+declare NIXD_BIN    # path to nixd/bin/ for package scripts (static)
+declare NIXD_ETC    # path to nixd/etc/, conf for package scripts (static)
+declare NIXD_NAME   # name of package script being called (dynamic)
+
+# Useful variables within this program, set in main function.
 declare PROG
 declare PROG_DIR
-declare PREFIX
 
 usage() {
     # Print program usage to stderr and exit with status code 1.
@@ -19,7 +24,10 @@ usage() {
 
     echo "usage: $PROG <command>"
     echo
-    echo "Configurations are in $PROG/etc/, installations are in $PROG/usr/."
+    echo "Configuration variables:"
+    echo "NIXD_PREFIX: $NIXD_PREFIX"
+    echo "NIXD_BIN:    $NIXD_BIN"
+    echo "NIXD_ETC:    $NIXD_ETC"
     echo
     echo "Commands:"
     echo "boot - Initialize stack specified in configuration."
@@ -27,16 +35,37 @@ usage() {
 }
 
 boot() {
-    export PREFIX
-    echo "PREFIX: $PREFIX"
-    echo "TODO"
+    # Be verbose to stdout to clearly log our actions. Set debug option later.
+
+    # Export PREFIX for use in package scripts.
+    export NIXD_PREFIX NIXD_BIN NIXD_ETC
+    echo "NIXD_PREFIX: $NIXD_PREFIX"
+    echo "NIXD_BIN:    $NIXD_BIN"
+    echo "NIXD_ETC:    $NIXD_ETC"
+
+    for x in $NIXD_BIN/*; do
+        export NIXD_NAME="$( basename "$x" )"
+        if [ "$NIXD_NAME" = "$PROG" ]; then
+            continue
+        fi
+
+        if [ -x $x ]; then
+            export NIXD_NAME="$( basename "$x" )"
+            echo "NIXD_NAME:   $NIXD_NAME"
+            $x
+        else
+            echo "$x is not executable."
+        fi
+    done
 }
 
 main() {
     PROG="$( basename "${BASH_SOURCE[0]}" )"
     local script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     PROG_DIR="$( dirname "$script_dir" )"
-    PREFIX=$PROG_DIR/usr
+    NIXD_PREFIX=$PROG_DIR/usr
+    NIXD_BIN=$PROG_DIR/bin
+    NIXD_ETC=$PROG_DIR/etc
 
     # Print usage and exit if there are no arguments.
     if [ $# -eq 0 ]; then
