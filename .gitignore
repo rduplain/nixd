@@ -3,8 +3,9 @@
 \#*
 .DS_Store
 /.emacs*
+/etc/
+*.html
 *.log
 __MACOSX
-/etc/
-/usr/
 *.sw*
+/usr/
