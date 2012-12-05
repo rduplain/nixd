@@ -15,3 +15,5 @@ In your Makefile:
 
     boot:
     	nixd/bin/nixd boot
+
+Copyright 2012 Ron DuPlain. BSD licensed.
