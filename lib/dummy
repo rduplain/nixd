@@ -1,0 +1,15 @@
+#!/bin/bash
+
+check() {
+    return 1
+}
+
+resources() {
+    return 0
+}
+
+boot() {
+    return 0
+}
+
+nixd_run "$@"

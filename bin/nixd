@@ -5,14 +5,20 @@
 declare NIXD_PREFIX # prefix to use in installation, absolute nixd/usr (static)
 declare NIXD_BIN    # path to nixd/bin/ for package scripts (static)
 declare NIXD_ETC    # path to nixd/etc/, conf for package scripts (static)
+declare NIXD_SRC    # path to nixd/src/, dest for package resources (static)
 declare NIXD_NAME   # name of package script being called (dynamic)
+declare NIXD_RES    # base path where package resources are downloaded (dynamic)
+
+# Functions provided to package scripts written in bash.
+declare -f nixd_error
+declare -f nixd_run
 
 # Useful variables within this program, set in main function.
 declare PROG
 declare PROG_DIR
 
 usage() {
-    # Print program usage to stderr and exit with status code 1.
+    # Print nixd program usage to stderr and exit with status code 1.
 
     exec >&2 # Redirect all further stdout to stderr.
 
@@ -34,7 +40,120 @@ usage() {
     exit 1
 }
 
+nixd_error() {
+    # Print given message to stderr and exit with status code 2.
+    echo "$@" >&2
+    exit 2
+}
+
+nixd_run() {
+    # A main routine for package scripts written in bash.
+
+    local command=$1
+    shift
+
+    local command_type=`type -t $command`
+
+    if [ -z "$command_type" ]; then
+        nixd_error "$NIXD_NAME: $command is not implemented."
+    elif [ "$command_type" != "function" ]; then
+        nixd_error "$NIXD_NAME: $command is not a valid command."
+    fi
+
+    $command "$@"
+}
+
+download_and_boot() {
+    # Download resources given by `exe resources` then `exe boot`.
+    #
+    # The boot subcommand runs in working directory where resources are placed.
+    #
+    # Download each of the resources specified in by the package script's
+    # 'resource' subcommand. Resources are newline delimited URLs with an
+    # optional local name, in the format of one of:
+    #
+    #     <url>
+    #     <url><space><local name>
+    #
+    # For example:
+    #
+    #     http://example.com/package.tar.gz
+    #     http://example.com/package.tar.gz package-1.0.tar.gz
+    #
+    # In the first case, the remote name of package.tar.gz is used locally. In
+    # the second case, the remote file is downloaded locally to a file named
+    # package-1.0.tar.gz.
+
+    local exe=$1
+    shift
+
+    mkdir -p $NIXD_RES
+
+    local resources=$( $exe resources )
+
+    # To understand the following code, understand bash IFS and arrays.
+    #
+    # Understanding the internal field separator (IFS) in bash:
+    #
+    # The IFS is used in word splitting. To split across lines in a string, a
+    # for-loop can simply iterate across that string with IFS set to the
+    # newline character. IFS must be restored to support normal operation of
+    # any further commands.
+    #
+    # Understanding arrays in bash:
+    #
+    # Mind the syntax. Set and access as follows.
+    #
+    #     array=( some things )
+    #     ${array[*]} # "some things"
+    #     ${array[0]} # "some"
+    #     ${array[1]} # "things"
+    #     ${array[2]} # ""
+    pushd $NIXD_RES > /dev/null
+
+    local OLD_IFS="$IFS"
+    local NEW_IFS=$'\n' # Specifying ANSI escaped char requires $'string' form.
+
+    IFS="$NEW_IFS"
+    for line in $resources; do
+        IFS="$OLD_IFS"
+
+        local tokens=( $line )
+        local url=${tokens[0]}
+        local local_name=${tokens[1]}
+
+        if [ -n "$local_name" ]; then
+            if [ -e $local_name ]; then
+                echo "$NIXD_NAME: using existing $local_name"
+            else
+                echo "$NIXD_NAME: downloading $local_name from $url"
+                curl -o $local_name $url
+            fi
+        else
+            local remote_name="$( basename "$url" )"
+            if [ -e $remote_name ]; then
+                echo "$NIXD_NAME: using existing $remote_name"
+            else
+                echo "$NIXD_NAME: downloading $remote_name from $url"
+                curl -o $remote_name $url
+            fi
+        fi
+
+        IFS="$NEW_IFS"
+    done
+    IFS="$OLD_IFS"
+
+    $exe boot
+    echo "$NIXD_NAME: booted."
+    local result=$?
+
+    popd > /dev/null
+    return $result
+}
+
 boot() {
+    # Find all package scripts, download their resources, then boot them.
+
     # Be verbose to stdout to clearly log our actions. Set debug option later.
 
     # Export PREFIX for use in package scripts.
@@ -43,29 +162,58 @@ boot() {
     echo "NIXD_BIN:    $NIXD_BIN"
     echo "NIXD_ETC:    $NIXD_ETC"
 
-    for x in $NIXD_BIN/*; do
-        export NIXD_NAME="$( basename "$x" )"
+    # Export utility functions for use in package scripts written in bash.
+    export -f nixd_error nixd_run
+
+    # Find all executables in the nixd bin directory.
+    for exe in $NIXD_BIN/*; do
+        export NIXD_NAME="$( basename "$exe" )"
+        export NIXD_RES=$NIXD_SRC/$NIXD_NAME
+
+        # Skip the nixd executable itself.
         if [ "$NIXD_NAME" = "$PROG" ]; then
             continue
         fi
 
-        if [ -x $x ]; then
-            export NIXD_NAME="$( basename "$x" )"
-            echo "NIXD_NAME:   $NIXD_NAME"
-            $x
+        if [ -x $exe ]; then
+            export NIXD_NAME="$( basename "$exe" )"
+            echo "$NIXD_NAME: checking..."
+            if ( $exe check ); then
+                echo "$NIXD_NAME: already configured."
+            else
+                echo "$NIXD_NAME: booting..."
+                download_and_boot $exe
+                local result=$?
+                if [ $result -ne 0 ]; then
+                    echo "$NIXD_NAME: boot returned non-zero status: $result"
+                    return $result
+                fi
+            fi
         else
-            echo "$x is not executable."
+            echo "$NIXD_NAME: $exe is not executable."
         fi
     done
 }
 
+check_requirements() {
+    # Verify that nixd requirements are installed.
+
+    if ( ! which curl > /dev/null ); then
+        echo "$PROG: requires 'curl', but could not find it."
+        return 1
+    fi
+}
+
 main() {
+    # The main routine of the nixd program itself.
+
     PROG="$( basename "${BASH_SOURCE[0]}" )"
     local script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     PROG_DIR="$( dirname "$script_dir" )"
     NIXD_PREFIX=$PROG_DIR/usr
     NIXD_BIN=$PROG_DIR/bin
     NIXD_ETC=$PROG_DIR/etc
+    NIXD_SRC=$PROG_DIR/src
 
     # Print usage and exit if there are no arguments.
     if [ $# -eq 0 ]; then
@@ -73,11 +221,16 @@ main() {
     fi
 
     local command=$1
-    shift;
+    shift
 
     if [ "`type -t $command`" != "function" ]; then
         usage "$PROG: $command is not a valid command."
     fi
+
+    # Exit immediately if a subcommand fails.
+    set -e
+
+    check_requirements
 
     $command "$@"
 }
