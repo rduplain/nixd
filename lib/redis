@@ -11,7 +11,7 @@ resources() {
     echo http://redis.googlecode.com/files/$ARCHIVE
 }
 
-boot() {
+install() {
     tar -xzf $ARCHIVE
     cd $UNPACKED
     PREFIX=$NIXD_PREFIX make install test

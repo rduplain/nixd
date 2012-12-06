@@ -8,7 +8,7 @@ resources() {
     return 0
 }
 
-boot() {
+install() {
     return 0
 }
 

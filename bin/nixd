@@ -63,10 +63,10 @@ nixd_run() {
     $command "$@"
 }
 
-download_and_boot() {
-    # Download resources given by `exe resources` then `exe boot`.
+download_and_install() {
+    # Download resources given by `exe resources` then `exe install`.
     #
-    # The boot subcommand runs in working directory where resources are placed.
+    # The install subcommand has working directory where resources are placed.
     #
     # Download each of the resources specified in by the package script's
     # 'resource' subcommand. Resources are newline delimited URLs with an
@@ -143,8 +143,8 @@ download_and_boot() {
     done
     IFS="$OLD_IFS"
 
-    $exe boot
-    echo "$NIXD_NAME: booted."
+    $exe install
+    echo "$NIXD_NAME: installed."
     local result=$?
 
     popd > /dev/null
@@ -152,7 +152,7 @@ download_and_boot() {
 }
 
 boot() {
-    # Find all package scripts, download their resources, then boot them.
+    # Find all package scripts, download their resources, then install them.
 
     # Be verbose to stdout to clearly log our actions. Set debug option later.
 
@@ -181,11 +181,11 @@ boot() {
             if ( $exe check ); then
                 echo "$NIXD_NAME: already configured."
             else
-                echo "$NIXD_NAME: booting..."
-                download_and_boot $exe
+                echo "$NIXD_NAME: installing..."
+                download_and_install $exe
                 local result=$?
                 if [ $result -ne 0 ]; then
-                    echo "$NIXD_NAME: boot returned non-zero status: $result"
+                    echo "$NIXD_NAME: install had non-zero status: $result"
                     return $result
                 fi
             fi
