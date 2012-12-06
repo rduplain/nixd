@@ -166,6 +166,7 @@ boot() {
     export -f nixd_error nixd_run
 
     # Find all executables in the nixd bin directory.
+    local count=0
     for exe in $NIXD_BIN/*; do
         export NIXD_NAME="$( basename "$exe" )"
         export NIXD_RES=$NIXD_SRC/$NIXD_NAME
@@ -176,6 +177,7 @@ boot() {
         fi
 
         if [ -x $exe ]; then
+            let count=count+1
             export NIXD_NAME="$( basename "$exe" )"
             echo "$NIXD_NAME: checking..."
             if ( $exe check ); then
@@ -193,6 +195,12 @@ boot() {
             echo "$NIXD_NAME: $exe is not executable."
         fi
     done
+
+    if [ $count -eq 0 ]; then
+        echo "$PROG: nothing to boot. No scripts found in $NIXD_BIN."
+        return 1
+    fi
+    echo "$PROG: booted, $count packages."
 }
 
 check_requirements() {
