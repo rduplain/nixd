@@ -33,6 +33,28 @@ For Make-appropriate self-contained application stacks on Unix-derived systems:
 7. Defer to OS for system-level dependencies. Support checking installation.
 
 
+### Mirroring / In-House Package Server
+
+Once your package scripts are ready to share across development/staging
+environments, you can set new environments to pull *all* declared resources
+from an in-house package server or the local filesystem to download once & run
+often. This provides efficiency for distribution and reliability that all
+dependencies are online for download, and allows for curated review of
+downloads before spreading across the organization's network. In one nixd
+setup:
+
+    ./nixd/bin/nixd download
+
+Then make ./nixd/src available as static files on an in-house httpd. From other
+nixd deployments with the same set of package scripts:
+
+    NIXD_MIRROR=https://resources.example.org/nixd/src/ ./bin/nixd boot
+
+You could also use the filesystem, or any other URL that curl understands:
+
+    NIXD_MIRROR=file:///var/lib/nixd/src/ ./bin/nixd boot
+
+
 ### Motivation
 
 I want the exact usage and goals listed above, and this project will illustrate
