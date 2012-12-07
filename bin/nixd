@@ -41,6 +41,9 @@ usage() {
     exit 1
 }
 
+
+# Begin functions exported to package scripts written in bash.
+
 nixd_error() {
     # Print given message to stderr and exit with status code 2.
     echo "$@" >&2
@@ -64,7 +67,10 @@ nixd_run() {
     $command "$@"
 }
 
-package_check_download_and_run() {
+
+# Begin per-package functions.
+
+boot_package() {
     # Downloads resources specified by `exe resources` then runs `exe install`.
     #
     # The install subcommand runs in directory where resources are downloaded.
@@ -77,12 +83,12 @@ package_check_download_and_run() {
     if ( $exe check ); then
         echo "$NIXD_NAME: already configured."
     else
-        package_download $exe
-        package_run $exe
+        download_package_resources $exe
+        install_package $exe
     fi
 }
 
-package_download() {
+download_package_resources() {
     # Download resources specified by the package script's 'resource' command.
     #
     # Resources are specified by `exe resources`, providing via stdout newline
@@ -180,7 +186,7 @@ package_download() {
     popd > /dev/null
 }
 
-package_run() {
+install_package() {
     # Run `exe install` in the package's resource directory.
     #
     # This resource directory will have anything downloaded for the package,
@@ -206,6 +212,9 @@ package_run() {
     popd > /dev/null
     return $result
 }
+
+
+# Begin essential utilities for nixd main program.
 
 for_each_script() {
     # Find all executables in the nixd bin directory and run a given command.
@@ -241,16 +250,6 @@ for_each_script() {
     echo "$PROG: finished $command on $count packages."
 }
 
-boot() {
-    # Find all package scripts, download their resources, then install them.
-    for_each_script package_check_download_and_run
-}
-
-download() {
-    # Find all package scripts and download their resources.
-    for_each_script package_download
-}
-
 check_requirements() {
     # Verify that nixd requirements are installed.
 
@@ -259,6 +258,22 @@ check_requirements() {
         return 1
     fi
 }
+
+
+# Begin user-exposed subcommands.
+
+boot() {
+    # Find all package scripts, download their resources, then install them.
+    for_each_script boot_package
+}
+
+download() {
+    # Find all package scripts and download their resources.
+    for_each_script download_package_resources
+}
+
+
+# Begin main script.
 
 main() {
     # The main routine of the nixd program itself.
