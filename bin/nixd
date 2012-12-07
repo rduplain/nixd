@@ -1,7 +1,7 @@
 #!/bin/bash
 # nixd main program for relatively self-contained configuration management.
 
-# Environment variables passed to package scripts, supplied in boot function.
+# Environment variables passed to package scripts. Declared now, set later.
 declare NIXD_PREFIX # prefix to use in installation, absolute nixd/usr (static)
 declare NIXD_BIN    # path to nixd/bin/ for package scripts (static)
 declare NIXD_ETC    # path to nixd/etc/, conf for package scripts (static)
