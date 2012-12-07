@@ -1,5 +1,5 @@
 #!/bin/bash
-# nixd: relatively self-contained configuration management.
+# nixd: self-contained configuration management.
 #
 # Copyright (c) 2012, Ron DuPlain
 # All rights reserved.
