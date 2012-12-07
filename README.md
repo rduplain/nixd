@@ -3,6 +3,8 @@ nixd: Relatively self-contained configuration management.
 
 Can configuration be as simple as `make boot` for your stack? Experimental.
 
+It's pronounced "nixed", like "mixed" but with an 'n'.
+
 
 ### Usage
 
