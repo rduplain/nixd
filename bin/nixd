@@ -69,6 +69,11 @@ nixd_run() {
 
 
 # Begin per-package functions.
+#
+# Each function here follows the same convention: take the path to the package
+# script executable as an argument, and if no argument is given, print a short
+# (typically one word) user-friendly label of the function's purpose -- to
+# support introspection.
 
 boot_package() {
     # Downloads resources specified by `exe resources` then runs `exe install`.
@@ -78,6 +83,11 @@ boot_package() {
 
     local exe=$1
     shift
+
+    if [ -z "$exe" ]; then
+        echo boot # declare this function's purpose
+        return
+    fi
 
     echo "$NIXD_NAME: checking..."
     if ( $exe check ); then
@@ -108,6 +118,11 @@ download_package_resources() {
 
     local exe=$1
     shift
+
+    if [ -z "$exe" ]; then
+        echo download # declare this function's purpose
+        return
+    fi
 
     local resources=$( $exe resources )
 
@@ -178,9 +193,9 @@ download_package_resources() {
     IFS="$OLD_IFS"
 
     if [ $count -eq 1 ]; then
-        echo "$NIXD_NAME: downloaded 1 resource."
+        echo "$NIXD_NAME: finished download, 1 resource."
     else
-        echo "$NIXD_NAME: downloaded $count resources."
+        echo "$NIXD_NAME: finished download, $count resources."
     fi
 
     popd > /dev/null
@@ -195,6 +210,11 @@ install_package() {
 
     local exe=$1
     shift
+
+    if [ -z "$exe" ]; then
+        echo install # declare this function's purpose
+        return
+    fi
 
     mkdir -p $NIXD_RES
     pushd $NIXD_RES > /dev/null
@@ -224,6 +244,8 @@ for_each_script() {
     local command=$1
     shift
 
+    local label=`$command`
+
     local count=0
     for exe in $NIXD_BIN/*; do
         export NIXD_NAME="$( basename "$exe" )"
@@ -247,7 +269,7 @@ for_each_script() {
         echo "$PROG: nothing to run. No scripts found in $NIXD_BIN."
         return 1
     fi
-    echo "$PROG: finished $command on $count packages."
+    echo "$PROG: finished $label with $count packages."
 }
 
 check_requirements() {
