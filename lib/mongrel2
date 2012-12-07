@@ -1,0 +1,21 @@
+#!/bin/bash
+
+ARCHIVE=mongrel2-1.8.0.tar.gz
+UNPACKED=mongrel2-1.8.0
+
+check() {
+    file $NIXD_PREFIX/bin/mongrel2
+    file $NIXD_PREFIX/bin/m2sh
+}
+
+resources() {
+    echo https://github.com/zedshaw/mongrel2/archive/v1.8.0.tar.gz $ARCHIVE
+}
+
+install() {
+    tar -xzf $ARCHIVE
+    cd $UNPACKED
+    PREFIX=$NIXD_PREFIX make install
+}
+
+nixd_run "$@"
