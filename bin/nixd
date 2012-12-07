@@ -36,7 +36,7 @@ usage() {
     echo "NIXD_ETC:    $NIXD_ETC"
     echo
     echo "Commands:"
-    echo "boot     - Initialize stack specified in configuration."
+    echo "boot     - Fully initialize stack specified in configuration."
     echo "download - Download all resources specified in configuration."
     exit 1
 }
