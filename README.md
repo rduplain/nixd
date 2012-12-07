@@ -52,4 +52,16 @@ the inevitable opaque error message.
 Then, we get `make run` which works across development environments & staging.
 
 
+### Design Principles
+
+1. Clearly log activity. Fail loudly and immediately.
+2. Plan for primitive operations to be run repeatedly. Finish quickly.
+3. Do not write a DSL for file management. We already have one: shell.
+4. Set up `nixd boot` to run without dependencies on all target systems.
+5. It's safe to use GNU bash and bashisms everywhere.
+6. Readability counts.
+7. Avoid gymnastics. Readability counts most in packaging scripts.
+8. Use dynamic binding carefully. Explicitly export within a "nixd" namespace.
+
+
 Copyright 2012 Ron DuPlain. BSD licensed.
