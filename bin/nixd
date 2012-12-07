@@ -198,12 +198,14 @@ download_package_resources() {
         local url=${tokens[0]}
         local local_name=${tokens[1]}
 
+        # Use `curl -L` to follow redirects.
+
         if [ -n "$local_name" ]; then
             if [ -e $local_name ]; then
                 echo "$NIXD_NAME: using existing $local_name"
             else
                 echo "$NIXD_NAME: downloading $local_name from $url"
-                curl -o $local_name $url
+                curl -L -o $local_name $url
             fi
         else
             local remote_name="$( basename "$url" )"
@@ -215,7 +217,7 @@ download_package_resources() {
                 # is always identical to curl's implementation, so that the
                 # '-e $remote_path' call above always works correctly.
                 echo "$NIXD_NAME: downloading $remote_name from $url"
-                curl -o $remote_name $url
+                curl -L -o $remote_name $url
             fi
         fi
 
