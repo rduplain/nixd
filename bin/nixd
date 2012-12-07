@@ -84,6 +84,9 @@ nixd_run() {
 
     local command_type=`type -t $command`
 
+    # Exit immediately if a subcommand fails.
+    set -e
+
     if [ -z "$command_type" ]; then
         nixd_error "$NIXD_NAME: $command is not implemented."
     elif [ "$command_type" != "function" ]; then
