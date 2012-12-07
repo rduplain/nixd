@@ -47,7 +47,7 @@ nixd_error() {
 }
 
 nixd_run() {
-    # A main routine for package scripts written in bash.
+    # A main routine usable by package scripts written in bash.
 
     local command=$1
     shift
@@ -63,14 +63,29 @@ nixd_run() {
     $command "$@"
 }
 
-download_and_install() {
-    # Download resources given by `exe resources` then `exe install`.
+package_check_download_and_run() {
+    # Downloads resources specified by `exe resources` then runs `exe install`.
     #
-    # The install subcommand has working directory where resources are placed.
+    # The install subcommand runs in directory where resources are downloaded.
+    # Does nothing if `exe check` reports success (0 status).
+
+    local exe=$1
+    shift
+
+    echo "$NIXD_NAME: checking..."
+    if ( $exe check ); then
+        echo "$NIXD_NAME: already configured."
+    else
+        package_download $exe
+        package_run $exe
+    fi
+}
+
+package_download() {
+    # Download resources specified by the package script's 'resource' command.
     #
-    # Download each of the resources specified in by the package script's
-    # 'resource' subcommand. Resources are newline delimited URLs with an
-    # optional local name, in the format of one of:
+    # Resources are specified by `exe resources`, providing via stdout newline
+    # (\n) delimited URLs with an optional local name, in the format of one of:
     #
     #     <url>
     #     <url><space><local name>
@@ -78,7 +93,7 @@ download_and_install() {
     # For example:
     #
     #     http://example.com/package.tar.gz
-    #     http://example.com/package.tar.gz package-1.0.tar.gz
+    #     http://example.com/1.0/package.tar.gz package-1.0.tar.gz
     #
     # In the first case, the remote name of package.tar.gz is used locally. In
     # the second case, the remote file is downloaded locally to a file named
@@ -87,9 +102,14 @@ download_and_install() {
     local exe=$1
     shift
 
-    mkdir -p $NIXD_RES
-
     local resources=$( $exe resources )
+
+    if [ -z "$resources" ]; then
+        echo "$NIXD_NAME: no resources to download."
+        return 0
+    fi
+
+    mkdir -p $NIXD_RES
 
     # To understand the following code, understand bash IFS and arrays.
     #
@@ -109,13 +129,16 @@ download_and_install() {
     #     ${array[0]} # "some"
     #     ${array[1]} # "things"
     #     ${array[2]} # ""
+
     pushd $NIXD_RES > /dev/null
 
     local OLD_IFS="$IFS"
     local NEW_IFS=$'\n' # Specifying ANSI escaped char requires $'string' form.
 
     IFS="$NEW_IFS"
+    local count=0
     for line in $resources; do
+        let count=count+1
         IFS="$OLD_IFS"
 
         local tokens=( $line )
@@ -134,6 +157,10 @@ download_and_install() {
             if [ -e $remote_name ]; then
                 echo "$NIXD_NAME: using existing $remote_name"
             else
+                # Use '-o $remote_name' instead of '-O' to guarantee same path.
+                # That is, do not assume $remote_name initialization behavior
+                # is always identical to curl's implementation, so that the
+                # '-e $remote_path' call above always works correctly.
                 echo "$NIXD_NAME: downloading $remote_name from $url"
                 curl -o $remote_name $url
             fi
@@ -143,29 +170,50 @@ download_and_install() {
     done
     IFS="$OLD_IFS"
 
+    if [ $count -eq 1 ]; then
+        echo "$NIXD_NAME: downloaded 1 resource."
+    else
+        echo "$NIXD_NAME: downloaded $count resources."
+    fi
+
+    popd > /dev/null
+}
+
+package_run() {
+    # Run `exe install` in the package's resource directory.
+    #
+    # This resource directory will have anything downloaded for the package,
+    # and is still created if no resources are needed, to allow the package
+    # script to create any scratch or temporary files.
+
+    local exe=$1
+    shift
+
+    mkdir -p $NIXD_RES
+    pushd $NIXD_RES > /dev/null
+
+    echo "$NIXD_NAME: installing..."
     $exe install
-    echo "$NIXD_NAME: installed."
+
     local result=$?
+    if [ $result -eq 0 ]; then
+        echo "$NIXD_NAME: installed."
+    else
+        echo "$NIXD_NAME: install had non-zero status: $result"
+    fi
 
     popd > /dev/null
     return $result
 }
 
-boot() {
-    # Find all package scripts, download their resources, then install them.
+for_each_script() {
+    # Find all executables in the nixd bin directory and run a given command.
+    #
+    # For each executable found, run: `command path/to/executable`.
 
-    # Be verbose to stdout to clearly log our actions. Set debug option later.
+    local command=$1
+    shift
 
-    # Export PREFIX for use in package scripts.
-    export NIXD_PREFIX NIXD_BIN NIXD_ETC
-    echo "NIXD_PREFIX: $NIXD_PREFIX"
-    echo "NIXD_BIN:    $NIXD_BIN"
-    echo "NIXD_ETC:    $NIXD_ETC"
-
-    # Export utility functions for use in package scripts written in bash.
-    export -f nixd_error nixd_run
-
-    # Find all executables in the nixd bin directory.
     local count=0
     for exe in $NIXD_BIN/*; do
         export NIXD_NAME="$( basename "$exe" )"
@@ -179,28 +227,22 @@ boot() {
         if [ -x $exe ]; then
             let count=count+1
             export NIXD_NAME="$( basename "$exe" )"
-            echo "$NIXD_NAME: checking..."
-            if ( $exe check ); then
-                echo "$NIXD_NAME: already configured."
-            else
-                echo "$NIXD_NAME: installing..."
-                download_and_install $exe
-                local result=$?
-                if [ $result -ne 0 ]; then
-                    echo "$NIXD_NAME: install had non-zero status: $result"
-                    return $result
-                fi
-            fi
+            $command $exe
         else
             echo "$NIXD_NAME: $exe is not executable."
         fi
     done
 
     if [ $count -eq 0 ]; then
-        echo "$PROG: nothing to boot. No scripts found in $NIXD_BIN."
+        echo "$PROG: nothing to run. No scripts found in $NIXD_BIN."
         return 1
     fi
-    echo "$PROG: booted, $count packages."
+    echo "$PROG: finished $command on $count packages."
+}
+
+boot() {
+    # Find all package scripts, download their resources, then install them.
+    for_each_script package_check_download_and_run
 }
 
 check_requirements() {
@@ -239,6 +281,15 @@ main() {
     set -e
 
     check_requirements
+
+    # Export PREFIX for use in package scripts.
+    export NIXD_PREFIX NIXD_BIN NIXD_ETC
+    echo "NIXD_PREFIX: $NIXD_PREFIX"
+    echo "NIXD_BIN:    $NIXD_BIN"
+    echo "NIXD_ETC:    $NIXD_ETC"
+
+    # Export utility functions for use in package scripts written in bash.
+    export -f nixd_error nixd_run
 
     $command "$@"
 }
