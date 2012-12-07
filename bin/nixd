@@ -68,6 +68,8 @@ usage() {
 
 
 # Begin functions exported to package scripts written in bash.
+#
+# Note that these scripts run in a separate bash process.
 
 nixd_error() {
     # Print given message to stderr and exit with status code 2.
@@ -84,7 +86,7 @@ nixd_run() {
 
     local command_type=`type -t $command`
 
-    # Exit immediately if a subcommand fails.
+    # Exit immediately if a command error occurs.
     set -e
 
     if [ -z "$command_type" ]; then
@@ -349,7 +351,7 @@ main() {
         usage "$PROG: $command is not a valid command."
     fi
 
-    # Exit immediately if a subcommand fails.
+    # Exit immediately if a command error occurs.
     set -e
 
     check_requirements
