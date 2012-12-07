@@ -25,7 +25,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# Environment variables passed to package scripts. Declared now, set later.
+# Environment variables passed to package scripts. Declare now, set later.
 declare NIXD_PREFIX # prefix to use in installation, absolute nixd/usr (static)
 declare NIXD_BIN    # path to nixd/bin/ for package scripts (static)
 declare NIXD_ETC    # path to nixd/etc/, conf for package scripts (static)
@@ -351,7 +351,7 @@ main() {
 
     check_requirements
 
-    # Export PREFIX for use in package scripts.
+    # Export nixd environment variables for use in package scripts.
     export NIXD_PREFIX NIXD_BIN NIXD_ETC
     echo "NIXD_PREFIX: $NIXD_PREFIX"
     echo "NIXD_BIN:    $NIXD_BIN"
