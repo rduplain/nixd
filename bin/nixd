@@ -34,6 +34,7 @@ usage() {
     echo "NIXD_PREFIX: $NIXD_PREFIX"
     echo "NIXD_BIN:    $NIXD_BIN"
     echo "NIXD_ETC:    $NIXD_ETC"
+    echo "NIXD_SRC:    $NIXD_SRC"
     echo
     echo "Commands:"
     echo "boot     - Fully initialize stack specified in configuration."
@@ -46,6 +47,7 @@ usage() {
 
 nixd_error() {
     # Print given message to stderr and exit with status code 2.
+
     echo "$@" >&2
     exit 2
 }
@@ -330,6 +332,7 @@ main() {
     echo "NIXD_PREFIX: $NIXD_PREFIX"
     echo "NIXD_BIN:    $NIXD_BIN"
     echo "NIXD_ETC:    $NIXD_ETC"
+    echo "NIXD_SRC:    $NIXD_SRC"
 
     # Export utility functions for use in package scripts written in bash.
     export -f nixd_error nixd_run
