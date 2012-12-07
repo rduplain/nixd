@@ -36,7 +36,8 @@ usage() {
     echo "NIXD_ETC:    $NIXD_ETC"
     echo
     echo "Commands:"
-    echo "boot - Initialize stack specified in configuration."
+    echo "boot     - Initialize stack specified in configuration."
+    echo "download - Download all resources specified in configuration."
     exit 1
 }
 
@@ -243,6 +244,11 @@ for_each_script() {
 boot() {
     # Find all package scripts, download their resources, then install them.
     for_each_script package_check_download_and_run
+}
+
+download() {
+    # Find all package scripts and download their resources.
+    for_each_script package_download
 }
 
 check_requirements() {
