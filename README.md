@@ -66,4 +66,4 @@ Then, we get `make run` which works across development environments & staging.
 8. Use dynamic binding carefully. Explicitly export within a "nixd" namespace.
 
 
-Copyright 2012 Ron DuPlain. BSD licensed.
+Copyright (c) 2012, Ron DuPlain. BSD licensed.
