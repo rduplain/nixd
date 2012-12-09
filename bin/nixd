@@ -185,7 +185,7 @@ download_package_resources() {
 }
 
 download_resource() {
-    # Run for each line in the resources output.
+    # Peform download, run for each line in the resources output.
 
     # Understanding arrays in bash:
     #
@@ -196,12 +196,30 @@ download_resource() {
     #     ${array[0]} # "some"
     #     ${array[1]} # "things"
     #     ${array[2]} # ""
+    #
+    # Get array length with ${#array[@]}.
 
-    local tokens=( $@ )
+    # Full line is passed in as argument.
+    local resource=$@
+
+    # Pull tokens into array.
+    local tokens=( $resource )
+
+    # Flight check.
+    if [ ${#tokens[@]} -eq 0 ]; then
+        nixd_error "$NIXD_NAME: No argument given to `download_resource`."
+    elif [ ${#tokens[@]} -gt 2 ]; then
+        nixd_error "$NIXD_NAME: resource error - more than 2 fields: $resource"
+    fi
+
+    # Parse tokens.
     local url=${tokens[0]}
-    local remote_name="$( basename "$url" )"
     local local_name=${tokens[1]}
 
+    # Parse remote name from URL.
+    local remote_name="$( basename "$url" )"
+
+    # If local name is not given, use remote name.
     if [ -z "$local_name" ]; then
         local_name=$remote_name
     fi
