@@ -162,6 +162,9 @@ download_package_resources() {
         return 0
     fi
 
+    echo "$NIXD_NAME: resources:"
+    echo "$resources"
+
     mkdir -p $NIXD_RES
 
     # To understand the following code, understand bash IFS and arrays.
