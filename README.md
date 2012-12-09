@@ -148,15 +148,52 @@ Typically you will use a process manager (foreman, supervisord, circus, procer,
 which is why nixd exists.
 
 
+### Ordering Dependencies
+
+Simple projects have flat dependencies; iterate through a list and install what
+you find. However, many projects will have ordered dependencies, where one
+package installation must be preceded by other tasks. To support this, nixd
+looks for a file at `nixd/bin/Orderfile` which looks like this:
+
+    package1: thing1 thing2 package2 thing3
+    package2: thing1
+
+You can list a package as a dependency multiple times. Any names not listed in
+the Orderfile are run after those in the Orderfile. More generally, nixd:
+
+1. Reads the Orderfile and runs everything in the Orderfile's dependency tree.
+2. Runs every script in `nixd/bin`. Those already run will pass on *check*.
+
+Often you'll want to specify tiers of dependencies instead of explicit
+ordering, so nixd supports targets: *first*, *second*, *third*, *fourth*, and
+*fifth*. You would set these in your Orderfile:
+
+    first: thing1 thing2
+    second: package1 thing3
+    package2: thing1
+
+The Orderfile syntax is that of a Makefile, so you can use features of `make`
+including '#' for comments, but note that nixd reserves the *all* target as
+part of its operation.
+
+Therefore, nixd reserves these names in `nixd/bin`: *nixd*, *Orderfile*, and
+*Makefile*. Note that `nixd/bin/Makefile` is updated automatically whenever
+`nixd/bin/Orderfile` is. You can have `nixd/bin/all`, but you cannot specify an
+*all* target in the Orderfile. Further, the Orderfile may get confused if you
+give it any of the target names: first, second, third, fourth, fifth. Not
+broken, so much as confused; your 'second' target will get run second in line.
+
+
 ### Goals for Use
 
 1. Provide a simple framework to build and configure *across* dependencies.
 2. Prefix dependency installation to chroot-able project-specific directory.
 3. Support simple local mirroring to cache all dependencies.
-4. Ease/encourage use of dependency forks, by mirroring the forked version.
-5. Use stdio & the command-line to allow use of any style of executable.
-6. Defer to rebuilding instead of uninstalling, given local mirroring.
-7. Defer to OS for system-level dependencies. Support checking installation.
+4. Provide a simple means to specify dependency order.
+5. Ease/encourage use of dependency forks, by mirroring the forked version.
+6. Use stdio & the command-line to allow use of any style of executable.
+7. Defer to rebuilding instead of uninstalling, given local mirroring.
+8. Defer to OS for system-level dependencies. Support checking installation.
 
 
 ### Mirroring / In-House Package Server
