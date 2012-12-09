@@ -70,9 +70,7 @@ In your Makefile:
     	nixd/bin/nixd boot
 
 
-### Goals
-
-For Make-appropriate self-contained application stacks on Unix-derived systems:
+### Goals for Use
 
 1. Provide a simple framework to build and configure *across* dependencies.
 2. Prefix dependency installation to chroot-able project-specific directory.
@@ -103,27 +101,6 @@ nixd deployments with the same set of package scripts:
 You could also use the filesystem, or any other URL that curl understands:
 
     NIXD_MIRROR=file:///var/lib/nixd/src/ ./bin/nixd boot
-
-
-### Motivation
-
-I want the exact usage and goals listed above, and this project will illustrate
-a specific use case. More generally, I want to configure *environments* not
-*systems*. Given a shell account (or platform-as-a-service hook), compose
-simple commands to check that everything is ready and install anything
-missing. This is particularly motivated by application stacks which have
-source-installed binaries and incorporate multiple programming environments,
-for example, those using mongrel2 and redis with a process manager.
-
-This is not to replace existing tools, just compose them in a simple manner.
-
-Let's not forget about Make. I would like `make boot` so that I can define
-higher level targets which depend on boot, and if the `boot` target is checking
-that everything is installed *before* running, then we can prevent embarrassing
-subsystem mismatch errors at runtime which are not immediately obvious given
-the inevitable opaque error message.
-
-Then, we get `make run` which works across development environments & staging.
 
 
 ### Design Principles
