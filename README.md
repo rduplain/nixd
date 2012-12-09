@@ -6,7 +6,7 @@ runtime environments for software projects targeting Unix/Unix-like systems.
 
 It's pronounced "nixed", like "mixed" but with an 'n'.
 
-Status: alpha.
+Status: alpha, ready for testing across popular Unix/Unix-like systems.
 
 
 ### Introduction
