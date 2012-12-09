@@ -288,7 +288,7 @@ for_each_script() {
             export NIXD_NAME="$( basename "$exe" )"
             $command $exe
         else
-            echo "$NIXD_NAME: $exe is not executable."
+            echo "$NIXD_NAME: $exe is not executable. Skipping."
         fi
     done
 
