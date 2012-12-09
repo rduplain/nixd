@@ -17,7 +17,8 @@ environment. You already have a means to commission new machines with your
 configuration (salt, chef, puppet, ...) and install underlying system packages
 (.deb, .rpm, ports, pacman, ...), but these do not provide a straightforward
 solution to *boot your environment* -- to translate the instructions of your
-preferred developer packages into a reliable, automated task.
+preferred developer packages into reliable, automated tasks which are run at
+the right times.
 
 You could include a boot task in your build system (make, maven, rake, ...),
 but the effort is non-trivial to keep the boot task efficient, resilient to
@@ -69,8 +70,8 @@ Create a `nixd` directory within your project, and download the `nixd` program:
 Repeat these instructions verbatim to update `nixd` to the latest version.
 
 Next, add scripts to `nixd/bin/` to provide packages for your environment. See
-[examples here](https://github.com/rduplain/nixd/tree/master/lib). The pattern
-is:
+[script examples here](https://github.com/rduplain/nixd/tree/master/lib). The
+pattern is:
 
 * *check* - exit with status 0 if already installed, non-zero otherwise.
 * *resources* - print required downloads to stdout, one on each line.
@@ -117,7 +118,8 @@ provide for a self-sufficient boot process. Build yourself a distribution which
 can boot an environment on all of your target systems without worrying about
 dependencies. If you have detailed OS-level dependencies, write nixd scripts
 which verify them (in *check*) and print out instructions (in *install*) when
-they are not met (returning non-zero on *install* to halt execution).
+they are not met (returning a non-zero exit status on *install* to halt
+execution).
 
 **Do** provide locally compiled packages like redis or mongrel2. **Do not**
 compile complex packages provided by your operating system -- use the tools
@@ -185,10 +187,11 @@ You could also use the filesystem, or any other URL that curl understands:
 2. Plan for primitive operations to be run repeatedly. Finish quickly.
 3. Do not write a DSL for file management. We already have one: shell.
 4. Set up `nixd boot` to run without dependencies on all target systems.
-5. It's safe to use GNU bash and bashisms everywhere.
-6. Readability counts.
-7. Avoid gymnastics. Readability counts most in packaging scripts.
-8. Use dynamic binding carefully. Explicitly export within a "nixd" namespace.
+5. Embrace Unix. Use exit status and stdio effectively.
+6. It's safe to use GNU bash and bashisms everywhere.
+7. Readability counts.
+8. Avoid gymnastics. Readability counts most in packaging scripts.
+9. Use dynamic binding carefully. Explicitly export within a "nixd" namespace.
 
 
 Copyright (c) 2012, Ron DuPlain. BSD licensed.
