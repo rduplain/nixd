@@ -1,9 +1,59 @@
 nixd: self-contained configuration management.
 ----------------------------------------------
 
-Can configuration be as simple as `make boot` for your stack? Experimental.
+nixd is a simple configuration management framework to build development and
+runtime environments for software projects targeting Unix/Unix-like systems.
 
 It's pronounced "nixed", like "mixed" but with an 'n'.
+
+Status: alpha.
+
+
+### Introduction
+
+Your favorite developer tools and packages include instructions on where to
+download the latest release and how to configure and install for your
+environment. You already have a means to commission new machines with your
+configuration (salt, chef, puppet, ...) and install underlying system packages
+(.deb, .rpm, ports, pacman, ...), but these do not provide a straightforward
+solution to *boot your environment* -- to translate the instructions of your
+preferred developer packages into a reliable, automated task.
+
+You could include a boot task in your build system (make, maven, rake, ...),
+but the effort is non-trivial to keep the boot task efficient, resilient to
+downtime of your community hosting services, reliable across target
+environments, readable, and maintainable. It's nixd role to make this effort
+trivial. Trivial and grokkable. Write automation hooks your team can easily
+understand.
+
+In configuration management terms, nixd is a local execution
+environment. Provide a shell, call `nixd boot`, then run your project.
+
+
+### Example
+
+Download and install Redis if `redis-server` is not already installed:
+
+    #!/bin/bash
+
+    ARCHIVE=redis-2.6.7.tar.gz
+    UNPACKED=redis-2.6.7
+
+    check() {
+        file $NIXD_PREFIX/bin/redis-server
+    }
+
+    resources() {
+        echo http://redis.googlecode.com/files/$ARCHIVE
+    }
+
+    install() {
+        tar -xzf $ARCHIVE
+        cd $UNPACKED
+        PREFIX=$NIXD_PREFIX make install test
+    }
+
+    nixd_run "$@"
 
 
 ### Usage
