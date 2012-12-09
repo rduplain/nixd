@@ -167,15 +167,26 @@ download_package_resources() {
 
     mkdir -p $NIXD_RES
 
-    # To understand the following code, understand bash IFS and arrays.
-    #
-    # Understanding the internal field separator (IFS) in bash:
-    #
-    # The IFS is used in word splitting. To split across lines in a string, a
-    # for-loop can simply iterate across that string with IFS set to the
-    # newline character. IFS must be restored to support normal operation of
-    # any further commands.
-    #
+    pushd $NIXD_RES > /dev/null
+
+    # Download each resource.
+    for_each_line_in "$resources" download_resource
+
+    # Count the number of lines.
+    local -i count=`echo "$resources" | wc -l`
+
+    if [ $count -eq 1 ]; then
+        echo "$NIXD_NAME: finished download, 1 resource."
+    else
+        echo "$NIXD_NAME: finished download, $count resources."
+    fi
+
+    popd > /dev/null
+}
+
+download_resource() {
+    # Run for each line in the resources output.
+
     # Understanding arrays in bash:
     #
     # Mind the syntax. Set and access as follows.
@@ -186,49 +197,26 @@ download_package_resources() {
     #     ${array[1]} # "things"
     #     ${array[2]} # ""
 
-    pushd $NIXD_RES > /dev/null
+    local tokens=( $@ )
+    local url=${tokens[0]}
+    local remote_name="$( basename "$url" )"
+    local local_name=${tokens[1]}
 
-    local OLD_IFS="$IFS"
-    local NEW_IFS=$'\n' # Specifying ANSI escaped char requires $'string' form.
-
-    IFS="$NEW_IFS"
-    local count=0
-    for line in $resources; do
-        let count=count+1
-        IFS="$OLD_IFS"
-
-        local tokens=( $line )
-        local url=${tokens[0]}
-        local remote_name="$( basename "$url" )"
-        local local_name=${tokens[1]}
-
-        if [ -z "$local_name" ]; then
-            local_name=$remote_name
-        fi
-
-        # Swap out given URL with mirror if configured.
-        if [ -n "$NIXD_MIRROR" ]; then
-            url=$NIXD_MIRROR/$NIXD_NAME/$local_name
-        fi
-
-        if [ -e $local_name ]; then
-            echo "$NIXD_NAME: using existing $local_name"
-        else
-            echo "$NIXD_NAME: downloading $local_name from $url"
-            curl -L -o $local_name $url # Use '-L' to follow redirects.
-        fi
-
-        IFS="$NEW_IFS"
-    done
-    IFS="$OLD_IFS"
-
-    if [ $count -eq 1 ]; then
-        echo "$NIXD_NAME: finished download, 1 resource."
-    else
-        echo "$NIXD_NAME: finished download, $count resources."
+    if [ -z "$local_name" ]; then
+        local_name=$remote_name
     fi
 
-    popd > /dev/null
+    # Swap out given URL with mirror if configured.
+    if [ -n "$NIXD_MIRROR" ]; then
+        url=$NIXD_MIRROR/$NIXD_NAME/$local_name
+    fi
+
+    if [ -e $local_name ]; then
+        echo "$NIXD_NAME: using existing $local_name"
+    else
+        echo "$NIXD_NAME: downloading $local_name from $url"
+        curl -L -o $local_name $url # Use '-L' to follow redirects.
+    fi
 }
 
 install_package() {
@@ -300,6 +288,33 @@ for_each_script() {
         return 1
     fi
     echo "$PROG: finished $label with $count packages."
+}
+
+for_each_line_in() {
+    # For line in <first_argument> string, execute <second_argument> function.
+    #
+    # Understanding the internal field separator (IFS) in bash:
+    #
+    # The IFS is used in word splitting. To split across lines in a string, a
+    # for-loop can simply iterate across that string with IFS set to the
+    # newline character. IFS must be restored to support normal operation of
+    # any further commands.
+
+    local lines="$1"
+    local line_function=$2
+    shift 2
+
+    local OLD_IFS="$IFS"
+    local NEW_IFS=$'\n' # Specifying ANSI escaped char requires $'string' form.
+
+    IFS="$NEW_IFS"
+    local count=0
+    for line in $lines; do
+        IFS="$OLD_IFS"
+        $line_function $line
+        IFS="$NEW_IFS"
+    done
+    IFS="$OLD_IFS"
 }
 
 print_environment() {
