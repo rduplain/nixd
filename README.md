@@ -58,16 +58,92 @@ Download and install Redis if `redis-server` is not already installed:
 
 ### Usage
 
-1. Put enclosed `nixd` directory in a project. Update version control excludes.
-2. Update project Makefile with the `boot` target below. Note literal tab.
-3. Add/symlink nixd package scripts to `nixd/bin/`. See `nixd/lib/`.
-4. Type `make boot`. Build make targets which use `boot` as dependency.
-5. Profit.
+Create a `nixd` directory within your project, and download the `nixd` program:
 
-In your Makefile:
+    cd path/to/your/project
+    mkdir -p nixd/bin/
+    curl -o nixd/bin/nixd https://raw.github.com/rduplain/nixd/master/bin/nixd
+    cat nixd/bin/nixd # Read and make sure you are comfortable executing it.
+    chmod a+x nixd/bin/nixd
+
+Repeat these instructions verbatim to update `nixd` to the latest version.
+
+Next, add scripts to `nixd/bin/` to provide packages for your environment. See
+[examples here](https://github.com/rduplain/nixd/tree/master/lib). The pattern
+is:
+
+* *check* - exit with status 0 if already installed, non-zero otherwise.
+* *resources* - print required downloads to stdout, one on each line.
+* *install* - unpack those downloads and install them to `$NIXD_PREFIX`.
+
+Unix conventions apply. Each script in `nixd/bin` must be executable. The
+script is invoked `nixd/bin/scriptname subcommand` where subcommand is *check*,
+*resources*, or *install*. An exit status of 0 indicates success, and a
+non-zero exit status indicates an error (which should stop nixd
+execution). Commands *check* and *install* do not have any stdio requirements,
+but *resources* must declare line-by-line its required URLs to stdout.
+
+It's important to declare all direct downloads through the *resources*
+subcommand. This lets nixd manage the downloads and support caching & in-house
+mirroring. The *install* subcommand is run with a working directory where the
+resources are downloaded. To provide meaningful filenames, you can list a local
+filename on the same line as the URL, separated by a space. Use a format of one
+of:
+
+    http://example.com/package.tar.gz
+    http://example.com/1.0/package.tar.gz package-1.0.tar.gz
+
+In the first case, the remote name of package.tar.gz is used locally. In the
+second case, the remote file is downloaded locally to a file named
+package-1.0.tar.gz.
+
+Note that nixd's convention is to load a filesytem hierarchy based on where the
+program itself is loaded on disk. This design supports self-contained
+installations relative to where the nixd program is installed, and is why you
+should create a dedicated `nixd/bin` directory. The hierarchy is as follows,
+with the indicated environment variables pointing to the full filepath:
+
+* nixd/usr/ - prefix to use in installation (NIXD_PREFIX)
+* nixd/bin/ - directory containing `nixd` program & package scripts (NIXD_BIN)
+* nixd/etc/ - directory for any configuration files (NIXD_ETC)
+* nixd/src/ - base directory for downloads (NIXD_SRC)
+* nixd/src/NAME - download directory for package script with NAME (NIXD_RES)
+
+The `etc/` directory can hold any static files you need. Simply reference these
+files in your package scripts.
+
+The reason to download the nixd script instead of a system-wide install, is to
+provide for a self-sufficient boot process. Build yourself a distribution which
+can boot an environment on all of your target systems without worrying about
+dependencies. If you have detailed OS-level dependencies, write nixd scripts
+which verify them (in *check*) and print out instructions (in *install*) when
+they are not met (returning non-zero on *install* to halt execution).
+
+**Do** provide locally compiled packages like redis or mongrel2. **Do not**
+compile complex packages provided by your operating system -- use the tools
+provided by the OS to inspect and install packages (which you can do in a nixd
+script).
+
+If you use a Makefile, you can create a boot target like this one (note literal
+tab), and create targets which use `boot` as a dependency:
 
     boot:
     	nixd/bin/nixd boot
+
+Clean would then be (carefully) as follows. If you want to keep downloads
+around, do not remove `nixd/src/`.
+
+    clean:
+    	rm -fr nixd/usr/ nixd/src/
+
+Then you'd have have your project run with the pattern of:
+
+    run: boot
+    	nixd/usr/bin/your-process-manager arguments
+
+Typically you will use a process manager (foreman, supervisord, circus, procer,
+...) to contain all of your project's processes, the initial boot process for
+which is why nixd exists.
 
 
 ### Goals for Use
