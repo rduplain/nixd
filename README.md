@@ -193,5 +193,12 @@ You could also use the filesystem, or any other URL that curl understands:
 8. Avoid gymnastics. Readability counts most in packaging scripts.
 9. Use dynamic binding carefully. Explicitly export within a "nixd" namespace.
 
+Design principle #1 has two competing sub-objectives: fail loudly and fail
+immediately. If a nixd process fails at some intermediate step in its
+implementation, which will likely happen when testing support for new
+underlying operating systems, "fail immediately" could lead to a quiet
+error. In this case, run `bash -x nixd/bin/nixd boot` (or other subcommand) to
+see the trace in bash to determine where it failed.
+
 
 Copyright (c) 2012, Ron DuPlain. BSD licensed.
