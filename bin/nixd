@@ -270,6 +270,35 @@ install_package() {
 }
 
 
+# Begin utilities for managing Orderfile (specify dependency order).
+
+list_make_targets() {
+    # Print targets found within given makefile.
+    local makefile=$1
+    shift
+
+    # Parse make database, with pipeline to reduce output to just target names.
+    #
+    # Discard stderr during this query, to prevent any messages to the effect
+    # of "No rule to make...", given that we are querying a makefile fragment.
+    make --file $makefile \
+        --dry-run \
+        --no-builtin-rules \
+        --no-builtin-variables \
+        --print-data-base 2>/dev/null  | \
+            # Skip everything until Files section of make's output.
+            sed -rn '/# Files/,$p' | \
+            # Remove files listed which are not targets.
+            # make --print-data-base lists '# Not a target:' above filenames.
+            sed -n '/Not a target/,+1d;p' | \
+            # Strip out comments, built-in targets, pattern rules, and
+            # potentially blank lines.
+            sed -ne '/^[^# \t\.%]/p' | \
+            # Trim down to just target name.
+            sed -ne 's/:.*$//p'
+}
+
+
 # Begin essential utilities for nixd main program.
 
 for_each_script() {
