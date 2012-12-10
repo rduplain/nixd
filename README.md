@@ -41,7 +41,7 @@ Download and install Redis if `redis-server` is not already installed:
     UNPACKED=redis-2.6.7
 
     check() {
-        file $NIXD_PREFIX/bin/redis-server
+        ls $NIXD_PREFIX/bin/redis-server
     }
 
     resources() {
@@ -51,7 +51,7 @@ Download and install Redis if `redis-server` is not already installed:
     install() {
         tar -xzf $ARCHIVE
         cd $UNPACKED
-        PREFIX=$NIXD_PREFIX make install test
+        PREFIX=$NIXD_PREFIX make install
     }
 
     nixd_run "$@"
