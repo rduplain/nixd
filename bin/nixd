@@ -287,8 +287,12 @@ for_each_script() {
         export NIXD_NAME="$( basename "$exe" )"
         export NIXD_RES=$NIXD_SRC/$NIXD_NAME
 
-        # Skip the nixd executable itself.
+        # Skip reserved keywords: nixd, order, Makefile.
         if [ "$NIXD_NAME" = "$PROG" ]; then
+            continue
+        elif [ "$NIXD_NAME" = "Orderfile" ]; then
+            continue
+        elif [ "$NIXD_NAME" = "Makefile" ]; then
             continue
         fi
 
