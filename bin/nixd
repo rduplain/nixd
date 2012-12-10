@@ -381,12 +381,14 @@ map_scripts() {
         export NIXD_NAME="$( basename "$exe" )"
         export NIXD_RES=$NIXD_SRC/$NIXD_NAME
 
-        # Skip reserved keywords: nixd, order, Makefile.
+        # Skip reserved keywords: nixd, order, Makefile, all.
         if [ "$NIXD_NAME" = "$PROG" ]; then
             continue
         elif [ "$NIXD_NAME" = "Orderfile" ]; then
             continue
         elif [ "$NIXD_NAME" = "Makefile" ]; then
+            continue
+        elif [ "$NIXD_NAME" = "all" ]; then
             continue
         fi
 
