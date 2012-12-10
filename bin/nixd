@@ -312,13 +312,12 @@ map_scripts() {
     # For each executable found, run: `command path/to/executable`.
 
     local command=$1
-    local exes="$2"
-    shift 2
+    shift
 
     local label=`$command`
 
     local count=0
-    for exe in $exes; do
+    for exe in $@; do
         export NIXD_NAME="$( basename "$exe" )"
         export NIXD_RES=$NIXD_SRC/$NIXD_NAME
 
@@ -400,12 +399,21 @@ check_requirements() {
 
 boot() {
     # Find all package scripts, download their resources, then install them.
-    for_each_script boot_package
+
+    if [ $# -eq 0 ]; then
+        map_scripts boot_package $NIXD_BIN/*
+    else
+        map_scripts boot_package "$@"
+    fi
 }
 
 download() {
     # Find all package scripts and download their resources.
-    for_each_script download_package_resources
+    if [ $# -eq 0 ]; then
+        map_scripts download_package_resources $NIXD_BIN/*
+    else
+        map_scripts download_package_resources "$@"
+    fi
 }
 
 
