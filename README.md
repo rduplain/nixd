@@ -177,11 +177,14 @@ including '#' for comments, but note that nixd reserves the *all* target as
 part of its operation.
 
 Therefore, nixd reserves these names in `nixd/bin`: *nixd*, *Orderfile*, and
-*Makefile*. Note that `nixd/bin/Makefile` is updated automatically whenever
-`nixd/bin/Orderfile` is. You can have `nixd/bin/all`, but you cannot specify an
-*all* target in the Orderfile. Further, the Orderfile may get confused if you
-give it any of the target names: first, second, third, fourth, fifth. Not
-broken, so much as confused; your 'second' target will get run second in line.
+*Makefile*. Note that `nixd/bin/Makefile` is updated automatically from
+`nixd/bin/Orderfile` on every run. You can have `nixd/bin/all`, but you cannot
+specify an *all* target in the Orderfile. Further, the Orderfile may get
+confused if you give it any of the target names: first, second, third, fourth,
+fifth. Not broken, so much as confused; your 'second' target will get run
+second in line.
+
+Note that the Orderfile is only used for the boot command.
 
 
 ### Goals for Use

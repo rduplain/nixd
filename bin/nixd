@@ -37,8 +37,10 @@ declare NIXD_NAME   # name of package script being called (dynamic)
 declare NIXD_RES    # base path where package resources are downloaded (dynamic)
 
 # Functions provided to package scripts written in bash.
-declare -f nixd_error
-declare -f nixd_run
+#
+# Silence output in case nixd is calling itself.
+declare -f nixd_error                > /dev/null
+declare -f nixd_run                  > /dev/null
 
 # Useful variables within this program, set in main function.
 declare PROG
@@ -274,6 +276,7 @@ install_package() {
 
 list_make_targets() {
     # Print targets found within given makefile.
+
     local makefile=$1
     shift
 
@@ -329,6 +332,30 @@ write_makefile() {
         echo
         echo '.PHONY: all _ordered_tiers first second third fourth fifth'
     ) > $NIXD_BIN/Makefile
+}
+
+handle_boot_order() {
+    # If an Orderfile exists, run boot against the given order.
+    #
+    # Note that the Orderfile is only used for the boot command.
+    #
+    # Run this first when executing the top-level 'boot' command, then boot
+    # with all scripts. This will guarantee that the ordered scripts are run
+    # first, then all scripts are run together. Scripts which have ordering
+    # requirements should complete on the first run, and 'check' should
+    # indicate on the second run that no further work is needed.
+
+    if [ ! -e $NIXD_BIN/Orderfile ]; then
+        # No ordered work is needed.
+        return
+    fi
+
+    echo "$PROG: Handling order specified in Orderfile."
+    write_makefile
+    make -f $NIXD_BIN/Makefile all
+    echo
+    echo
+    echo "$PROG: Now iterating through all scripts."
 }
 
 
@@ -437,6 +464,10 @@ boot() {
     # Find all package scripts, download their resources, then install them.
 
     if [ $# -eq 0 ]; then
+        # Check first for an Orderfile, and execute it.
+        handle_boot_order
+
+        # Run all scripts in nixd's bin directory.
         map_scripts boot_package $NIXD_BIN/*
     else
         map_scripts boot_package "$@"
