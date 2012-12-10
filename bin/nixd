@@ -1,5 +1,5 @@
 #!/bin/bash
-# nixd v0.2-dev: self-contained configuration management.
+# nixd v0.2: self-contained configuration management.
 #
 # Copyright (c) 2012, Ron DuPlain
 # All rights reserved.
