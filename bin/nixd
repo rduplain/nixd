@@ -342,8 +342,11 @@ map_scripts() {
     if [ $count -eq 0 ]; then
         echo "$PROG: nothing to run. No scripts found in $NIXD_BIN."
         return 1
+    elif [ $count -eq 1 ]; then
+        echo "$PROG: finished $label with $count package."
+    else
+        echo "$PROG: finished $label with $count packages."
     fi
-    echo "$PROG: finished $label with $count packages."
 }
 
 map_lines() {
