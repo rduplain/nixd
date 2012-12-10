@@ -170,7 +170,7 @@ download_package_resources() {
     pushd $NIXD_RES > /dev/null
 
     # Download each resource.
-    for_each_line_in "$resources" download_resource
+    map_lines download_resource "$resources"
 
     # Count the number of lines.
     local -i count=`echo "$resources" | wc -l`
@@ -301,18 +301,24 @@ list_make_targets() {
 
 # Begin essential utilities for nixd main program.
 
-for_each_script() {
-    # Find all executables in the nixd bin directory and run a given command.
+map_scripts() {
+    # Execute <first_argument> for each executable in <second_argument> string.
+    #
+    # This is useful in mapping the given function to all executables in the
+    # nixd bin directory. Note that the executable paths must be absolute if
+    # current working directory changes during the execution of the mapped
+    # function.
     #
     # For each executable found, run: `command path/to/executable`.
 
     local command=$1
-    shift
+    local exes="$2"
+    shift 2
 
     local label=`$command`
 
     local count=0
-    for exe in $NIXD_BIN/*; do
+    for exe in $exes; do
         export NIXD_NAME="$( basename "$exe" )"
         export NIXD_RES=$NIXD_SRC/$NIXD_NAME
 
@@ -341,8 +347,8 @@ for_each_script() {
     echo "$PROG: finished $label with $count packages."
 }
 
-for_each_line_in() {
-    # For line in <first_argument> string, execute <second_argument> function.
+map_lines() {
+    # Execute <first_argument> for each line in <second_argument> string.
     #
     # Understanding the internal field separator (IFS) in bash:
     #
@@ -351,8 +357,8 @@ for_each_line_in() {
     # newline character. IFS must be restored to support normal operation of
     # any further commands.
 
-    local lines="$1"
-    local line_function=$2
+    local line_function=$1
+    local lines="$2"
     shift 2
 
     local OLD_IFS="$IFS"
