@@ -348,10 +348,12 @@ print_environment() {
 check_requirements() {
     # Verify that nixd requirements are installed.
 
-    if ( ! which curl > /dev/null ); then
-        echo "$PROG: requires 'curl', but could not find it."
-        return 1
-    fi
+    for program in basename dirname curl wc make sed; do
+        if ( ! which $program > /dev/null ); then
+            echo "$PROG: requires '$program' program, but could not find it."
+            return 1
+        fi
+    done
 }
 
 
