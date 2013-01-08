@@ -345,6 +345,14 @@ map_lines() {
     IFS="$OLD_IFS"
 }
 
+expand_executable_paths() {
+    # Expand executable paths from "foo bar" to "$NIXD_BIN/foo $NIXD_BIN/bar".
+
+    for name in $@; do
+        echo $NIXD_BIN/$name
+    done
+}
+
 print_environment() {
     # Print static environment variables to stdout.
 
@@ -374,7 +382,7 @@ install() {
     if [ $# -eq 0 ]; then
         map_scripts install_package $NIXD_BIN/*
     else
-        map_scripts install_package "$@"
+        map_scripts install_package `expand_executable_paths "$@"`
     fi
 }
 
@@ -383,7 +391,7 @@ download() {
     if [ $# -eq 0 ]; then
         map_scripts download_package_resources $NIXD_BIN/*
     else
-        map_scripts download_package_resources "$@"
+        map_scripts download_package_resources `expand_executable_paths "$@"`
     fi
 }
 
