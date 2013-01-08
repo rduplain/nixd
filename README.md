@@ -202,4 +202,4 @@ error. In this case, run `bash -x nixd/bin/nixd install` (or other subcommand)
 to see the trace in bash to determine where it failed.
 
 
-Copyright (c) 2012, Ron DuPlain. BSD licensed.
+Copyright (c) 2012-2013, Ron DuPlain. BSD licensed.
