@@ -370,10 +370,14 @@ print_environment() {
     echo "NIXD_MIRROR: $NIXD_MIRROR"
 }
 
-check_requirements() {
-    # Verify that nixd requirements are installed.
+check_for_program() {
+    # Check requirements. Verify each of the given programs is installed.
+    #
+    # Check for program dependencies granularly, which is useful when there are
+    # features of nixd which are not essential for simple operations, to check
+    # for dependencies lazily.
 
-    for program in basename dirname curl wc; do
+    for program in $@; do
         if ( ! which $program > /dev/null ); then
             echo "$PROG: requires '$program' program, but could not find it."
             return 1
@@ -386,6 +390,7 @@ check_requirements() {
 
 install() {
     # Find all package scripts, download their resources, then install them.
+
     if [ $# -eq 0 ]; then
         map_scripts install_package `expand_executable_paths all`
     else
@@ -395,6 +400,7 @@ install() {
 
 download() {
     # Find all package scripts and download their resources.
+
     if [ $# -eq 0 ]; then
         map_scripts download_package_resources `expand_executable_paths all`
     else
@@ -431,7 +437,7 @@ main() {
     # Exit immediately if a command error occurs.
     set -e
 
-    check_requirements
+    check_for_program basename dirname curl wc
 
     # Export nixd environment variables for use in package scripts.
     export NIXD_PREFIX NIXD_BIN NIXD_ETC
