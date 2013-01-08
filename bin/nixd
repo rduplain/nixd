@@ -39,6 +39,7 @@ declare NIXD_RES    # base path where package resources are downloaded (dynamic)
 # Functions provided to package scripts written in bash.
 #
 # Silence output in case nixd is calling itself.
+declare -f nixd_echo                 > /dev/null
 declare -f nixd_error                > /dev/null
 declare -f nixd_run                  > /dev/null
 
@@ -72,6 +73,12 @@ usage() {
 # Begin functions exported to package scripts written in bash.
 #
 # Note that these scripts run in a separate bash process.
+
+nixd_echo() {
+    # Echo all arguments on a single line, prefixed by $NIXD_NAME.
+
+    echo "$NIXD_NAME: $@"
+}
 
 nixd_error() {
     # Print given message to stderr and return 2.
@@ -164,8 +171,9 @@ download_package_resources() {
         return 0
     fi
 
+    # Log each resource, prefixed by the nixd name.
     echo "$NIXD_NAME: resources:"
-    echo "$resources"
+    map_lines nixd_echo "$resources"
 
     mkdir -p $NIXD_RES
 
@@ -363,11 +371,11 @@ expand_executable_paths() {
 print_environment() {
     # Print static environment variables to stdout.
 
-    echo "NIXD_PREFIX: $NIXD_PREFIX"
-    echo "NIXD_BIN:    $NIXD_BIN"
-    echo "NIXD_ETC:    $NIXD_ETC"
-    echo "NIXD_SRC:    $NIXD_SRC"
-    echo "NIXD_MIRROR: $NIXD_MIRROR"
+    echo "$PROG: NIXD_PREFIX: $NIXD_PREFIX"
+    echo "$PROG: NIXD_BIN:    $NIXD_BIN"
+    echo "$PROG: NIXD_ETC:    $NIXD_ETC"
+    echo "$PROG: NIXD_SRC:    $NIXD_SRC"
+    echo "$PROG: NIXD_MIRROR: $NIXD_MIRROR"
 }
 
 check_for_program() {
