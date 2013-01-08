@@ -186,7 +186,7 @@ You could also use the filesystem, or any other URL that curl understands:
 
 ### Design Principles
 
-1. Clearly log activity. Fail loudly and immediately.
+1. Clearly log activity. Fail loudly and immediately. Make it obvious.
 2. Plan for primitive operations to be run repeatedly. Finish quickly.
 3. Do not write a DSL for file management. We already have one: shell.
 4. Have `nixd install` run without unusual dependencies on all target systems.
