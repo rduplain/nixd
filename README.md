@@ -153,10 +153,11 @@ which is why nixd exists.
 1. Provide a simple framework to build and configure *across* dependencies.
 2. Prefix dependency installation to chroot-able project-specific directory.
 3. Support simple local mirroring to cache all dependencies.
-4. Ease/encourage use of dependency forks, by mirroring the forked version.
-5. Use stdio & the command-line to allow use of any style of executable.
-6. Defer to rebuilding instead of uninstalling, given local mirroring.
-7. Defer to OS for system-level dependencies. Support checking installation.
+4. Provide a simple means to specify dependency order.
+5. Ease/encourage use of dependency forks, by mirroring the forked version.
+6. Use stdio & the command-line to allow use of any style of executable.
+7. Defer to rebuilding instead of uninstalling, given local mirroring.
+8. Defer to OS for system-level dependencies. Support checking installation.
 
 
 ### Mirroring / In-House Package Server
