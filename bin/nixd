@@ -63,7 +63,7 @@ usage() {
     print_environment
     echo
     echo "Commands:"
-    echo "boot     - Fully initialize stack specified in configuration."
+    echo "install  - Install stack specified in configuration."
     echo "download - Download all resources specified in configuration."
     exit 1
 }
@@ -108,7 +108,7 @@ nixd_run() {
 # (typically one word) user-friendly label of the function's purpose -- to
 # support introspection.
 
-boot_package() {
+install_package() {
     # Downloads resources specified by `exe resources` then runs `exe install`.
     #
     # The install subcommand runs in directory where resources are downloaded.
@@ -118,7 +118,7 @@ boot_package() {
     shift
 
     if [ -z "$exe" ]; then
-        echo boot # declare this function's purpose
+        echo install # declare this function's purpose
         return
     fi
 
@@ -127,7 +127,7 @@ boot_package() {
         echo "$NIXD_NAME: already configured."
     else
         download_package_resources $exe
-        install_package $exe
+        run_package_install $exe
     fi
 }
 
@@ -239,7 +239,7 @@ download_resource() {
     fi
 }
 
-install_package() {
+run_package_install() {
     # Run `exe install` in the package's resource directory.
     #
     # This resource directory will have anything downloaded for the package,
@@ -369,12 +369,12 @@ check_requirements() {
 
 # Begin user-exposed subcommands.
 
-boot() {
+install() {
     # Find all package scripts, download their resources, then install them.
     if [ $# -eq 0 ]; then
-        map_scripts boot_package $NIXD_BIN/*
+        map_scripts install_package $NIXD_BIN/*
     else
-        map_scripts boot_package "$@"
+        map_scripts install_package "$@"
     fi
 }
 

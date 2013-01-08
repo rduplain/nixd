@@ -16,19 +16,19 @@ download the latest release and how to configure and install for your
 environment. You already have a means to commission new machines with your
 configuration (salt, chef, puppet, ...) and install underlying system packages
 (.deb, .rpm, ports, pacman, ...), but these do not provide a straightforward
-solution to *boot your environment* -- to translate the instructions of your
+solution to *install your environment* -- to translate the instructions of your
 preferred developer packages into reliable, automated tasks which are run at
 the right times.
 
-You could include a boot task in your build system (make, maven, rake, ...),
-but the effort is non-trivial to keep the boot task efficient, resilient to
+You could include a install task in your build system (make, maven, rake, ...),
+but the effort is non-trivial to keep the install task efficient, resilient to
 downtime of your community hosting services, reliable across target
 environments, readable, and maintainable. It's nixd role to make this effort
 trivial. Trivial and grokkable. Write automation hooks your team can easily
 understand.
 
 In configuration management terms, nixd is a local execution
-environment. Provide a shell, call `nixd boot`, then run your project.
+environment. Provide a shell, call `nixd install`, then run your project.
 
 
 ### Example
@@ -114,23 +114,23 @@ The `etc/` directory can hold any static files you need. Simply reference these
 files in your package scripts.
 
 The reason to download the nixd script instead of a system-wide install, is to
-provide for a self-sufficient boot process. Build yourself a distribution which
-can boot an environment on all of your target systems without worrying about
-dependencies. If you have detailed OS-level dependencies, write nixd scripts
-which verify them (in *check*) and print out instructions (in *install*) when
-they are not met (returning a non-zero exit status on *install* to halt
-execution).
+provide for a self-sufficient install process. Build yourself a distribution
+which can boot an environment on all of your target systems without worrying
+about dependencies. If you have detailed OS-level dependencies, write nixd
+scripts which verify them (in *check*) and print out instructions (in
+*install*) when they are not met (returning a non-zero exit status on *install*
+to halt execution).
 
 **Do** provide locally compiled packages like redis or mongrel2. **Do not**
 compile complex packages provided by your operating system -- use the tools
 provided by the OS to inspect and install packages (which you can do in a nixd
 script).
 
-If you use a Makefile, you can create a boot target like this one (note literal
-tab), and create targets which use `boot` as a dependency:
+If you use a Makefile, you can create a install target like this one (note
+literal tab), and create targets which use `install` as a dependency:
 
-    boot:
-    	nixd/bin/nixd boot
+    install:
+    	nixd/bin/nixd install
 
 Clean would then be (carefully) as follows. If you want to keep downloads
 around, do not remove `nixd/src/`.
@@ -140,12 +140,12 @@ around, do not remove `nixd/src/`.
 
 Then you'd have have your project run with the pattern of:
 
-    run: boot
+    run: install
     	nixd/usr/bin/your-process-manager arguments
 
 Typically you will use a process manager (foreman, supervisord, circus, procer,
-...) to contain all of your project's processes, the initial boot process for
-which is why nixd exists.
+...) to contain all of your project's processes, the initial install process
+for which is why nixd exists.
 
 
 ### Goals for Use
@@ -175,11 +175,11 @@ setup:
 Then make ./nixd/src available as static files on an in-house httpd. From other
 nixd deployments with the same set of package scripts:
 
-    NIXD_MIRROR=https://resources.example.org/nixd/src/ ./bin/nixd boot
+    NIXD_MIRROR=https://resources.example.org/nixd/src/ ./bin/nixd install
 
 You could also use the filesystem, or any other URL that curl understands:
 
-    NIXD_MIRROR=file:///var/lib/nixd/src/ ./bin/nixd boot
+    NIXD_MIRROR=file:///var/lib/nixd/src/ ./bin/nixd install
 
 
 ### Design Principles
@@ -187,7 +187,7 @@ You could also use the filesystem, or any other URL that curl understands:
 1. Clearly log activity. Fail loudly and immediately.
 2. Plan for primitive operations to be run repeatedly. Finish quickly.
 3. Do not write a DSL for file management. We already have one: shell.
-4. Set up `nixd boot` to run without dependencies on all target systems.
+4. Have `nixd install` run without unusual dependencies on all target systems.
 5. Embrace Unix. Use exit status and stdio effectively.
 6. It's safe to use GNU bash and bashisms everywhere.
 7. Readability counts.
@@ -198,8 +198,8 @@ Design principle #1 has two competing sub-objectives: fail loudly and fail
 immediately. If a nixd process fails at some intermediate step in its
 implementation, which will likely happen when testing support for new
 underlying operating systems, "fail immediately" could lead to a quiet
-error. In this case, run `bash -x nixd/bin/nixd boot` (or other subcommand) to
-see the trace in bash to determine where it failed.
+error. In this case, run `bash -x nixd/bin/nixd install` (or other subcommand)
+to see the trace in bash to determine where it failed.
 
 
 Copyright (c) 2012, Ron DuPlain. BSD licensed.
