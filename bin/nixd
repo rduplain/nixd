@@ -1,7 +1,7 @@
 #!/bin/bash
-# nixd v0.1: self-contained configuration management.
+# nixd v0.3: self-contained configuration management.
 #
-# Copyright (c) 2012, Ron DuPlain
+# Copyright (c) 2012-2013, Ron DuPlain
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,10 @@ declare NIXD_NAME   # name of package script being called (dynamic)
 declare NIXD_RES    # base path where package resources are downloaded (dynamic)
 
 # Functions provided to package scripts written in bash.
-declare -f nixd_error
-declare -f nixd_run
+#
+# Silence output in case nixd is calling itself.
+declare -f nixd_error                > /dev/null
+declare -f nixd_run                  > /dev/null
 
 # Useful variables within this program, set in main function.
 declare PROG
@@ -61,7 +63,7 @@ usage() {
     print_environment
     echo
     echo "Commands:"
-    echo "boot     - Fully initialize stack specified in configuration."
+    echo "install  - Install stack specified in configuration."
     echo "download - Download all resources specified in configuration."
     exit 1
 }
@@ -106,7 +108,7 @@ nixd_run() {
 # (typically one word) user-friendly label of the function's purpose -- to
 # support introspection.
 
-boot_package() {
+install_package() {
     # Downloads resources specified by `exe resources` then runs `exe install`.
     #
     # The install subcommand runs in directory where resources are downloaded.
@@ -116,7 +118,7 @@ boot_package() {
     shift
 
     if [ -z "$exe" ]; then
-        echo boot # declare this function's purpose
+        echo install # declare this function's purpose
         return
     fi
 
@@ -125,7 +127,7 @@ boot_package() {
         echo "$NIXD_NAME: already configured."
     else
         download_package_resources $exe
-        install_package $exe
+        run_package_install $exe
     fi
 }
 
@@ -170,7 +172,7 @@ download_package_resources() {
     pushd $NIXD_RES > /dev/null
 
     # Download each resource.
-    for_each_line_in "$resources" download_resource
+    map_lines download_resource "$resources"
 
     # Count the number of lines.
     local -i count=`echo "$resources" | wc -l`
@@ -237,7 +239,7 @@ download_resource() {
     fi
 }
 
-install_package() {
+run_package_install() {
     # Run `exe install` in the package's resource directory.
     #
     # This resource directory will have anything downloaded for the package,
@@ -272,8 +274,13 @@ install_package() {
 
 # Begin essential utilities for nixd main program.
 
-for_each_script() {
-    # Find all executables in the nixd bin directory and run a given command.
+map_scripts() {
+    # Execute <first_argument> for each executable in <second_argument> string.
+    #
+    # This is useful in mapping the given function to all executables in the
+    # nixd bin directory. Note that the executable paths must be absolute if
+    # current working directory changes during the execution of the mapped
+    # function.
     #
     # For each executable found, run: `command path/to/executable`.
 
@@ -283,7 +290,7 @@ for_each_script() {
     local label=`$command`
 
     local count=0
-    for exe in $NIXD_BIN/*; do
+    for exe in $@; do
         export NIXD_NAME="$( basename "$exe" )"
         export NIXD_RES=$NIXD_SRC/$NIXD_NAME
 
@@ -304,12 +311,15 @@ for_each_script() {
     if [ $count -eq 0 ]; then
         echo "$PROG: nothing to run. No scripts found in $NIXD_BIN."
         return 1
+    elif [ $count -eq 1 ]; then
+        echo "$PROG: finished $label with $count package."
+    else
+        echo "$PROG: finished $label with $count packages."
     fi
-    echo "$PROG: finished $label with $count packages."
 }
 
-for_each_line_in() {
-    # For line in <first_argument> string, execute <second_argument> function.
+map_lines() {
+    # Execute <first_argument> for each line in <second_argument> string.
     #
     # Understanding the internal field separator (IFS) in bash:
     #
@@ -318,8 +328,8 @@ for_each_line_in() {
     # newline character. IFS must be restored to support normal operation of
     # any further commands.
 
-    local lines="$1"
-    local line_function=$2
+    local line_function=$1
+    local lines="$2"
     shift 2
 
     local OLD_IFS="$IFS"
@@ -348,23 +358,33 @@ print_environment() {
 check_requirements() {
     # Verify that nixd requirements are installed.
 
-    if ( ! which curl > /dev/null ); then
-        echo "$PROG: requires 'curl', but could not find it."
-        return 1
-    fi
+    for program in basename dirname curl wc; do
+        if ( ! which $program > /dev/null ); then
+            echo "$PROG: requires '$program' program, but could not find it."
+            return 1
+        fi
+    done
 }
 
 
 # Begin user-exposed subcommands.
 
-boot() {
+install() {
     # Find all package scripts, download their resources, then install them.
-    for_each_script boot_package
+    if [ $# -eq 0 ]; then
+        map_scripts install_package $NIXD_BIN/*
+    else
+        map_scripts install_package "$@"
+    fi
 }
 
 download() {
     # Find all package scripts and download their resources.
-    for_each_script download_package_resources
+    if [ $# -eq 0 ]; then
+        map_scripts download_package_resources $NIXD_BIN/*
+    else
+        map_scripts download_package_resources "$@"
+    fi
 }
 
 
