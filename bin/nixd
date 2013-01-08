@@ -47,7 +47,7 @@ declare PROG
 declare PROG_DIR
 
 usage() {
-    # Print nixd program usage to stderr and exit with status code 1.
+    # Print nixd program usage to stderr and return 1.
 
     exec >&2 # Redirect all further stdout to stderr.
 
@@ -65,7 +65,7 @@ usage() {
     echo "Commands:"
     echo "install  - Install stack specified in configuration."
     echo "download - Download all resources specified in configuration."
-    exit 1
+    return 1
 }
 
 
@@ -74,10 +74,10 @@ usage() {
 # Note that these scripts run in a separate bash process.
 
 nixd_error() {
-    # Print given message to stderr and exit with status code 2.
+    # Print given message to stderr and return 2.
 
     echo "$@" >&2
-    exit 2
+    return 2
 }
 
 nixd_run() {
@@ -88,7 +88,7 @@ nixd_run() {
 
     local command_type=`type -t $command`
 
-    # Exit immediately if a command error occurs.
+    # Exit immediately if a command error or non-zero return occurs.
     set -e
 
     if [ -z "$command_type" ]; then
@@ -422,6 +422,9 @@ main() {
     NIXD_ETC=$PROG_DIR/etc
     NIXD_SRC=$PROG_DIR/src
 
+    # Exit immediately if a command error or non-zero return occurs.
+    set -e
+
     # Print usage and exit if there are no arguments.
     if [ $# -eq 0 ]; then
         usage
@@ -433,9 +436,6 @@ main() {
     if [ "`type -t $command`" != "function" ]; then
         usage "$PROG: $command is not a valid command."
     fi
-
-    # Exit immediately if a command error occurs.
-    set -e
 
     check_for_program basename dirname curl wc
 
