@@ -294,8 +294,10 @@ map_scripts() {
         export NIXD_NAME="$( basename "$exe" )"
         export NIXD_RES=$NIXD_SRC/$NIXD_NAME
 
-        # Skip the nixd executable itself.
+        # Skip reserved keywords: nixd, all.
         if [ "$NIXD_NAME" = "$PROG" ]; then
+            continue
+        elif [ "$NIXD_NAME" = "all" ]; then
             continue
         fi
 
@@ -349,7 +351,12 @@ expand_executable_paths() {
     # Expand executable paths from "foo bar" to "$NIXD_BIN/foo $NIXD_BIN/bar".
 
     for name in $@; do
-        echo $NIXD_BIN/$name
+        if [ "$name" = "all" ]; then
+            # all is an alias for all executables in $NIXD_BIN.
+            echo "$NIXD_BIN/*"
+        else
+            echo $NIXD_BIN/$name
+        fi
     done
 }
 
@@ -380,7 +387,7 @@ check_requirements() {
 install() {
     # Find all package scripts, download their resources, then install them.
     if [ $# -eq 0 ]; then
-        map_scripts install_package $NIXD_BIN/*
+        map_scripts install_package `expand_executable_paths all`
     else
         map_scripts install_package `expand_executable_paths "$@"`
     fi
@@ -389,7 +396,7 @@ install() {
 download() {
     # Find all package scripts and download their resources.
     if [ $# -eq 0 ]; then
-        map_scripts download_package_resources $NIXD_BIN/*
+        map_scripts download_package_resources `expand_executable_paths all`
     else
         map_scripts download_package_resources `expand_executable_paths "$@"`
     fi

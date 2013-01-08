@@ -147,6 +147,8 @@ Typically you will use a process manager (foreman, supervisord, circus, procer,
 ...) to contain all of your project's processes, the initial install process
 for which is why nixd exists.
 
+Note that 'nixd' and 'all' are reserved and cannot be used as package names.
+
 
 ### Goals for Use
 
