@@ -65,8 +65,9 @@ usage() {
     print_environment
     echo
     echo "Commands:"
-    echo "install  - Install stack specified in configuration."
-    echo "download - Download all resources specified in configuration."
+    echo "install     - Install stack configured by sbin scripts."
+    echo "download    - Download all resources declared by sbin scripts."
+    echo "selfinstall - Install this nixd executable into a new project."
     return 1
 }
 
@@ -415,6 +416,27 @@ download() {
         map_scripts download_package_resources `expand_executable_paths all`
     else
         map_scripts download_package_resources `expand_executable_paths "$@"`
+    fi
+}
+
+selfinstall() {
+    # Install this nixd executable into a new project. Go viral.
+
+    if [ $# -eq 0 ]; then
+        exec >&2 # Redirect all further stdout to stderr.
+        echo "usage: $PROG selfinstall <project_root_filepath>"
+        echo
+        echo "Provide the filepath to the root of the new project. Examples:"
+        echo
+        echo "    $PROG selfinstall ."
+        echo "    $PROG selfinstall ~/projects/foo"
+        return 1
+    else
+        local destination=$1/nixd/bin
+        shift
+
+        mkdir -p $destination
+        cp -v $NIXD_BIN/nixd $destination/
     fi
 }
 
