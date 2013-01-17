@@ -1,13 +1,13 @@
 .#*
 *~
 \#*
-/bin/
 .DS_Store
 /.emacs*
 /etc/
 *.html
 *.log
 __MACOSX
+/sbin/
 /src/
 *.sw*
 /usr/

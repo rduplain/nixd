@@ -69,7 +69,7 @@ Create a `nixd` directory within your project, and download the `nixd` program:
 
 Repeat these instructions verbatim to update `nixd` to the latest version.
 
-Next, add scripts to `nixd/bin/` to provide packages for your environment. See
+Next, add scripts to `nixd/sbin/` to provide packages for your environment. See
 [script examples here](https://github.com/rduplain/nixd/tree/master/lib). The
 pattern is:
 
@@ -77,10 +77,10 @@ pattern is:
 * *resources* - print required downloads to stdout, one on each line.
 * *install* - unpack those downloads and install them to `$NIXD_PREFIX`.
 
-Unix conventions apply. Each script in `nixd/bin` must be executable. The
-script is invoked `nixd/bin/scriptname subcommand` where subcommand is *check*,
-*resources*, or *install*. An exit status of 0 indicates success, and a
-non-zero exit status indicates an error (which should stop nixd
+Unix conventions apply. Each script in `nixd/sbin` must be executable. The
+script is invoked `nixd/sbin/scriptname subcommand` where subcommand is
+*check*, *resources*, or *install*. An exit status of 0 indicates success, and
+a non-zero exit status indicates an error (which should stop nixd
 execution). Commands *check* and *install* do not have any stdio requirements,
 but *resources* must declare line-by-line its required URLs to stdout.
 
@@ -105,7 +105,8 @@ should create a dedicated `nixd/bin` directory. The hierarchy is as follows,
 with the indicated environment variables pointing to the full filepath:
 
 * nixd/usr/ - prefix to use in installation (NIXD_PREFIX)
-* nixd/bin/ - directory containing `nixd` program & package scripts (NIXD_BIN)
+* nixd/bin/ - directory containing `nixd` program & utilities (NIXD_BIN)
+* nixd/sbin/ - directory containing `nixd` package scripts (NIXD_SBIN)
 * nixd/etc/ - directory for any configuration files (NIXD_ETC)
 * nixd/src/ - base directory for downloads (NIXD_SRC)
 * nixd/src/NAME - download directory for package script with NAME (NIXD_RES)
