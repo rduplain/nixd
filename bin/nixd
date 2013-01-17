@@ -45,8 +45,8 @@ declare -f nixd_error                > /dev/null
 declare -f nixd_run                  > /dev/null
 
 # Useful variables within this program, set in main function.
+declare NIXD_DIR
 declare PROG
-declare PROG_DIR
 
 usage() {
     # Print nixd program usage to stderr and return 1.
@@ -448,12 +448,12 @@ main() {
 
     PROG="$( basename "${BASH_SOURCE[0]}" )"
     local script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    PROG_DIR="$( dirname "$script_dir" )"
-    NIXD_PREFIX=$PROG_DIR/usr
-    NIXD_BIN=$PROG_DIR/bin
-    NIXD_SBIN=$PROG_DIR/sbin
-    NIXD_ETC=$PROG_DIR/etc
-    NIXD_SRC=$PROG_DIR/src
+    NIXD_DIR="$( dirname "$script_dir" )"
+    NIXD_PREFIX=$NIXD_DIR/usr
+    NIXD_BIN=$NIXD_DIR/bin
+    NIXD_SBIN=$NIXD_DIR/sbin
+    NIXD_ETC=$NIXD_DIR/etc
+    NIXD_SRC=$NIXD_DIR/src
 
     # Exit immediately if a command error or non-zero return occurs.
     set -e
@@ -473,7 +473,7 @@ main() {
     check_for_program basename dirname curl wc
 
     # Export nixd environment variables for use in package scripts.
-    export NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC
+    export NIXD_DIR NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC
     print_environment
 
     # Export utility functions for use in package scripts written in bash.
