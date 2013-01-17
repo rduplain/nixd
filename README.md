@@ -69,6 +69,13 @@ Create a `nixd` directory within your project, and download the `nixd` program:
 
 Repeat these instructions verbatim to update `nixd` to the latest version.
 
+If you already have a working `nixd` executable, you can instead use the
+`selfinstall` command to create the `nixd/bin` directory and copy the
+executable:
+
+    cd path/to/your/project
+    nixd selfinstall .
+
 Next, add scripts to `nixd/sbin/` to provide packages for your environment. See
 [script examples here](https://github.com/rduplain/nixd/tree/master/lib). The
 pattern is:
