@@ -34,6 +34,8 @@ declare NIXD_BIN    # path to nixd/bin/ for utilities (static)
 declare NIXD_SBIN   # path to nixd/sbin/ for package scripts (static)
 declare NIXD_ETC    # path to nixd/etc/, conf for package scripts (static)
 declare NIXD_SRC    # path to nixd/src/, dest for package resources (static)
+declare NIXD_OPT    # path to nixd/opt/, in some package installations (static)
+declare NIXD_VAR    # path to nixd/var/, post-install runtime files (static)
 declare NIXD_NAME   # name of package script being called (dynamic)
 declare NIXD_RES    # base path where package resources are downloaded (dynamic)
 
@@ -402,6 +404,10 @@ check_for_program() {
 install() {
     # Find all package scripts, download their resources, then install them.
 
+    # Create additional directories.
+    mkdir -p $NIXD_OPT
+    mkdir -p $NIXD_VAR
+
     if [ $# -eq 0 ]; then
         map_scripts install_package `expand_executable_paths all`
     else
@@ -468,6 +474,8 @@ main() {
     NIXD_SBIN=${NIXD_SBIN:-$NIXD_DIR/sbin}
     NIXD_ETC=${NIXD_ETC:-$NIXD_DIR/etc}
     NIXD_SRC=${NIXD_SRC:-$NIXD_DIR/src}
+    NIXD_OPT=${NIXD_OPT:-$NIXD_DIR/opt}
+    NIXD_VAR=${NIXD_VAR:-$NIXD_DIR/var}
 
     # Exit immediately if a command error or non-zero return occurs.
     set -e
@@ -487,7 +495,8 @@ main() {
     check_for_program basename dirname curl wc
 
     # Export nixd environment variables for use in package scripts.
-    export NIXD_DIR NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC
+    export NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC NIXD_OPT NIXD_VAR
+    export NIXD_DIR
     print_environment
 
     # Export utility functions for use in package scripts written in bash.
