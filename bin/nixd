@@ -81,7 +81,9 @@ usage() {
 nixd_echo() {
     # Echo all arguments on a single line, prefixed by $NIXD_NAME.
 
-    echo "$NIXD_NAME: $@"
+    # See parameter expansion note in main().
+    local name=${NIXD_NAME:-$PROG}
+    echo "$name: $@"
 }
 
 nixd_error() {
