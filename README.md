@@ -20,12 +20,12 @@ solution to *install your environment* -- to translate the instructions of your
 preferred developer packages into reliable, automated tasks which are run at
 the right times.
 
-You could include a install task in your build system (make, maven, rake, ...),
-but the effort is non-trivial to keep the install task efficient, resilient to
-downtime of your community hosting services, reliable across target
-environments, readable, and maintainable. It's nixd role to make this effort
-trivial. Trivial and grokkable. Write automation hooks your team can easily
-understand.
+You could include an install task in your build system (make, maven, rake,
+...), but the effort is non-trivial to keep the install task efficient,
+resilient to downtime of your community hosting services, reliable across
+target environments, readable, and maintainable. It's nixd role to make this
+effort trivial. Trivial and grokkable. Write automation hooks your team can
+easily understand.
 
 In configuration management terms, nixd is a local execution
 environment. Provide a shell, call `nixd install`, then run your project.
@@ -55,6 +55,9 @@ Download and install Redis if `redis-server` is not already installed:
     }
 
     nixd_run "$@"
+
+Put this simple script in your nixd configuration, and you can ensure redis is
+installed correctly.
 
 
 ### Usage
@@ -134,14 +137,22 @@ compile complex packages provided by your operating system -- use the tools
 provided by the OS to inspect and install packages (which you can do in a nixd
 script).
 
-If you use a Makefile, you can create a install target like this one (note
+If your package scripts have ordered dependencies, you can specify the names of
+the scripts in the correct order as arguments to nixd. In this example, nixd
+will install package1 before package2, then install all packages on the second
+call to nixd:
+
+    nixd install package1 package2
+    nixd install
+
+If you use a Makefile, you can create an install target like this one (note
 literal tab), and create targets which use `install` as a dependency:
 
     install:
     	nixd/bin/nixd install
 
-Clean would then be (carefully) as follows. If you want to keep downloads
-around, do not remove `nixd/src/`.
+Clean would then be (carefully) as follows. If you want to keep resource
+downloads around, do not remove `nixd/src/`.
 
     clean:
     	rm -fr nixd/usr/ nixd/src/
@@ -164,7 +175,7 @@ Note that 'nixd' and 'all' are reserved and cannot be used as package names.
 2. Prefix dependency installation to chroot-able project-specific directory.
 3. Support simple local mirroring to cache all dependencies.
 4. Provide a simple means to specify dependency order.
-5. Ease/encourage use of dependency forks, by mirroring the forked version.
+5. Ease use of dependency forks, by mirroring the forked version.
 6. Use stdio & the command-line to allow use of any style of executable.
 7. Defer to rebuilding instead of uninstalling, given local mirroring.
 8. Defer to OS for system-level dependencies. Support checking installation.
