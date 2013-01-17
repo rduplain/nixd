@@ -85,10 +85,11 @@ nixd_echo() {
 }
 
 nixd_error() {
-    # Print given message to stderr and return 2.
+    # Echo all arguments on a single line to stderr, prefixed by $NIXD_NAME.
+    #
+    # Be sure to return/exit with an error code if applicable, after calling.
 
-    echo "$@" >&2
-    return 2
+    nixd_echo "$@" >&2
 }
 
 nixd_run() {
@@ -104,8 +105,10 @@ nixd_run() {
 
     if [ -z "$command_type" ]; then
         nixd_error "$NIXD_NAME: $command is not implemented."
+        return 2
     elif [ "$command_type" != "function" ]; then
         nixd_error "$NIXD_NAME: $command is not a valid command."
+        return 2
     fi
 
     $command "$@"
@@ -222,8 +225,10 @@ download_resource() {
     # Flight check.
     if [ ${#tokens[@]} -eq 0 ]; then
         nixd_error "$NIXD_NAME: No argument given to `download_resource`."
+        return 1
     elif [ ${#tokens[@]} -gt 2 ]; then
         nixd_error "$NIXD_NAME: resource error - more than 2 fields: $resource"
+        return 1
     fi
 
     # Parse tokens.
@@ -318,8 +323,10 @@ map_scripts() {
             export NIXD_NAME="$( basename "$exe" )"
             $command $exe
         else
-            echo "$NIXD_NAME: $exe is not executable. Skipping."
+            nixd_error "$exe is not executable. Skipping."
         fi
+
+        unset NIXD_NAME NIXD_RES
     done
 
     if [ $count -eq 0 ]; then
@@ -392,7 +399,7 @@ check_for_program() {
 
     for program in $@; do
         if ( ! which $program > /dev/null ); then
-            echo "$PROG: requires '$program' program, but could not find it."
+            nixd_error "requires '$program' program, but could not find it."
             return 1
         fi
     done
