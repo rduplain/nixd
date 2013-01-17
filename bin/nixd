@@ -491,7 +491,7 @@ main() {
     print_environment
 
     # Export utility functions for use in package scripts written in bash.
-    export -f nixd_error nixd_run
+    export -f nixd_echo nixd_error nixd_run
 
     $command "$@"
 }
