@@ -56,8 +56,8 @@ Download and install Redis if `redis-server` is not already installed:
 
     nixd_run "$@"
 
-Put this simple script in your nixd configuration, and you can ensure redis is
-installed correctly.
+Put this simple script in your repo-tracked nixd configuration, and you can
+ensure redis is installed correctly whenever you checkout and run your project.
 
 
 ### Usage
@@ -137,10 +137,10 @@ compile complex packages provided by your operating system -- use the tools
 provided by the OS to inspect and install packages (which you can do in a nixd
 script).
 
-If your package scripts have ordered dependencies, you can specify the names of
-the scripts in the correct order as arguments to nixd. In this example, nixd
-will install package1 before package2, then install all packages on the second
-call to nixd:
+If your project has *ordered dependencies*, you can specify the names of the
+scripts in the correct order as arguments to nixd. In this example, nixd will
+install package1 then package2, then install all packages on the second call to
+nixd:
 
     nixd install package1 package2
     nixd install
