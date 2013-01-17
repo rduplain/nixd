@@ -493,6 +493,9 @@ main() {
     # Export utility functions for use in package scripts written in bash.
     export -f nixd_echo nixd_error nixd_run
 
+    # Prefix PATH with NIXD_BIN directory.
+    export PATH=$NIXD_BIN:$PATH
+
     $command "$@"
 }
 
