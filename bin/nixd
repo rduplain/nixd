@@ -61,7 +61,7 @@ usage() {
 
     echo "usage: $PROG <command>"
     echo
-    echo "Configuration variables:"
+    echo "Configuration environment variables:"
     print_environment
     echo
     echo "Commands:"
@@ -449,11 +449,25 @@ main() {
     PROG="$( basename "${BASH_SOURCE[0]}" )"
     local script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     NIXD_DIR="$( dirname "$script_dir" )"
-    NIXD_PREFIX=$NIXD_DIR/usr
-    NIXD_BIN=$NIXD_DIR/bin
-    NIXD_SBIN=$NIXD_DIR/sbin
-    NIXD_ETC=$NIXD_DIR/etc
-    NIXD_SRC=$NIXD_DIR/src
+
+    # Set configuration environment variables.
+    #
+    # Each of the documented user-facing variables are user-configurable, using
+    # the environment variable if set or nixd's default otherwise. Therefore,
+    # each of the variables are set with default value parameter expansion
+    # below.
+    #
+    # Understanding Parameter Expansion in bash:
+    #
+    #     ${parameter:-word}
+    #         Use Default Values. If parameter is unset or null, the expansion
+    #         of word is substituted. Otherwise, the value of parameter is
+    #         substituted.
+    NIXD_PREFIX=${NIXD_PREFIX:-$NIXD_DIR/usr}
+    NIXD_BIN=${NIXD_BIN:-$NIXD_DIR/bin}
+    NIXD_SBIN=${NIXD_SBIN:-$NIXD_DIR/sbin}
+    NIXD_ETC=${NIXD_ETC:-$NIXD_DIR/etc}
+    NIXD_SRC=${NIXD_SRC:-$NIXD_DIR/src}
 
     # Exit immediately if a command error or non-zero return occurs.
     set -e
