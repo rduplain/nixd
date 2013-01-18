@@ -482,7 +482,6 @@ install() {
 
     # Since there is work to do, default to verbose.
     export NIXD_VERBOSE=${NIXD_VERBOSE:-"true"}
-    echo_environment
 
     # Create additional directories.
     mkdir -p $NIXD_OPT
@@ -586,7 +585,6 @@ main() {
     # Export nixd environment variables for use in package scripts.
     export NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC NIXD_OPT NIXD_VAR
     export NIXD_DIR NIXD_VERBOSE
-    echo_environment
 
     # Export utility functions for use in package scripts written in bash.
     export -f nixd_echo nixd_error nixd_run nixd_ls
