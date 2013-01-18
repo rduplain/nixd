@@ -152,7 +152,7 @@ literal tab), and create targets which use `install` as a dependency:
     	nixd/bin/nixd install
 
 Clean would then be (carefully) as follows. If you want to keep resource
-downloads around, do not remove `nixd/src/`.
+downloads and builds around, do not remove `nixd/src/`.
 
     clean:
     	rm -fr nixd/usr/ nixd/opt/ nixd/var/ nixd/src/
