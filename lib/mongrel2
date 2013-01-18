@@ -13,6 +13,7 @@ resources() {
 }
 
 install() {
+    check_headers sqlite3.h zmq.h
     tar -xzf $ARCHIVE
     cd $UNPACKED
     PREFIX=$NIXD_PREFIX make install
