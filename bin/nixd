@@ -461,9 +461,14 @@ selfinstall() {
 main() {
     # The main routine of the nixd program itself.
 
+    # The name of this executable program.
     PROG="$( basename "${BASH_SOURCE[0]}" )"
-    local script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    NIXD_DIR="$( dirname "$script_dir" )"
+
+    # If NIXD_DIR is already set in the environment, use that value.
+    if [ -z "$NIXD_DIR" ]; then
+        local script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        NIXD_DIR="$( dirname "$script_dir" )"
+    fi
 
     # Set configuration environment variables.
     #
