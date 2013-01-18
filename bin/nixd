@@ -46,8 +46,11 @@ declare -f nixd_echo                 > /dev/null
 declare -f nixd_error                > /dev/null
 declare -f nixd_run                  > /dev/null
 
-# Useful variables within this program, set in main function.
+# Implementation details exposed in environment, set in main function.
 declare NIXD_DIR
+declare NIXD_VERBOSE
+
+# The name of this executable program, set in main function.
 declare PROG
 
 usage() {
@@ -64,7 +67,7 @@ usage() {
     echo "usage: $PROG <command>"
     echo
     echo "Configuration environment variables:"
-    print_environment
+    echo_environment
     echo
     echo "Commands:"
     echo "install     - Install stack configured by sbin scripts."
@@ -80,6 +83,12 @@ usage() {
 
 nixd_echo() {
     # Echo all arguments on a single line, prefixed by $NIXD_NAME.
+    #
+    # Does nothing if not in verbose mode.
+
+    if [ -z "$NIXD_VERBOSE" ]; then
+        return
+    fi
 
     # See parameter expansion note in main().
     local name=${NIXD_NAME:-$PROG}
@@ -91,7 +100,9 @@ nixd_error() {
     #
     # Be sure to return/exit with an error code if applicable, after calling.
 
-    nixd_echo "$@" >&2
+    # See parameter expansion note in main().
+    local name=${NIXD_NAME:-$PROG}
+    echo "$name: $@" >&2
 }
 
 nixd_run() {
@@ -138,9 +149,9 @@ install_package() {
         return
     fi
 
-    echo "$NIXD_NAME: checking..."
+    nixd_echo "checking..."
     if ( $exe check ); then
-        echo "$NIXD_NAME: already configured."
+        nixd_echo "already configured."
     else
         download_package_resources $exe
         run_package_install $exe
@@ -176,12 +187,12 @@ download_package_resources() {
     local resources=$( $exe resources )
 
     if [ -z "$resources" ]; then
-        echo "$NIXD_NAME: no resources to download."
+        nixd_echo "no resources to download."
         return 0
     fi
 
     # Log each resource, prefixed by the nixd name.
-    echo "$NIXD_NAME: resources:"
+    nixd_echo "resources:"
     map_lines nixd_echo "$resources"
 
     mkdir -p $NIXD_RES
@@ -195,9 +206,9 @@ download_package_resources() {
     local -i count=`echo "$resources" | wc -l`
 
     if [ $count -eq 1 ]; then
-        echo "$NIXD_NAME: finished download, 1 resource."
+        nixd_echo "finished download, 1 resource."
     else
-        echo "$NIXD_NAME: finished download, $count resources."
+        nixd_echo "finished download, $count resources."
     fi
 
     popd > /dev/null
@@ -251,9 +262,9 @@ download_resource() {
     fi
 
     if [ -e $local_name ]; then
-        echo "$NIXD_NAME: using existing $local_name"
+        nixd_echo "using existing $local_name"
     else
-        echo "$NIXD_NAME: downloading $local_name from $url"
+        nixd_echo "downloading $local_name from $url"
         curl -L -o $local_name $url # Use '-L' to follow redirects.
     fi
 }
@@ -276,14 +287,14 @@ run_package_install() {
     mkdir -p $NIXD_RES
     pushd $NIXD_RES > /dev/null
 
-    echo "$NIXD_NAME: installing..."
+    nixd_echo "installing..."
     $exe install
 
     local result=$?
     if [ $result -eq 0 ]; then
-        echo "$NIXD_NAME: installed."
+        nixd_echo "installed."
     else
-        echo "$NIXD_NAME: install had non-zero status: $result"
+        nixd_error "install had non-zero status: $result"
     fi
 
     popd > /dev/null
@@ -332,12 +343,12 @@ map_scripts() {
     done
 
     if [ $count -eq 0 ]; then
-        echo "$PROG: nothing to run. No scripts found in $NIXD_SBIN."
+        nixd_error "nothing to run. No scripts found in $NIXD_SBIN."
         return 1
     elif [ $count -eq 1 ]; then
-        echo "$PROG: finished $label with $count package."
+        nixd_echo "finished $label with $count package."
     else
-        echo "$PROG: finished $label with $count packages."
+        nixd_echo "finished $label with $count packages."
     fi
 }
 
@@ -381,15 +392,15 @@ expand_executable_paths() {
     done
 }
 
-print_environment() {
+echo_environment() {
     # Print static environment variables to stdout.
 
-    echo "$PROG: NIXD_PREFIX: $NIXD_PREFIX"
-    echo "$PROG: NIXD_BIN:    $NIXD_BIN"
-    echo "$PROG: NIXD_SBIN:   $NIXD_SBIN"
-    echo "$PROG: NIXD_ETC:    $NIXD_ETC"
-    echo "$PROG: NIXD_SRC:    $NIXD_SRC"
-    echo "$PROG: NIXD_MIRROR: $NIXD_MIRROR"
+    nixd_echo "NIXD_PREFIX: $NIXD_PREFIX"
+    nixd_echo "NIXD_BIN:    $NIXD_BIN"
+    nixd_echo "NIXD_SBIN:   $NIXD_SBIN"
+    nixd_echo "NIXD_ETC:    $NIXD_ETC"
+    nixd_echo "NIXD_SRC:    $NIXD_SRC"
+    nixd_echo "NIXD_MIRROR: $NIXD_MIRROR"
 }
 
 check_for_program() {
@@ -491,6 +502,10 @@ main() {
     NIXD_OPT=${NIXD_OPT:-$NIXD_DIR/opt}
     NIXD_VAR=${NIXD_VAR:-$NIXD_DIR/var}
 
+    # Verbose mode.
+    # When nixd gets a full command-line parser, this will look for '-v'.
+    NIXD_VERBOSE=${NIXD_VERBOSE:-""}
+
     # Exit immediately if a command error or non-zero return occurs.
     set -e
 
@@ -510,8 +525,8 @@ main() {
 
     # Export nixd environment variables for use in package scripts.
     export NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC NIXD_OPT NIXD_VAR
-    export NIXD_DIR
-    print_environment
+    export NIXD_DIR NIXD_VERBOSE
+    echo_environment
 
     # Export utility functions for use in package scripts written in bash.
     export -f nixd_echo nixd_error nixd_run
