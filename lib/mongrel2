@@ -4,8 +4,8 @@ ARCHIVE=mongrel2-1.8.0.tar.gz
 UNPACKED=mongrel2-1.8.0
 
 check() {
-    ls $NIXD_PREFIX/bin/mongrel2
-    ls $NIXD_PREFIX/bin/m2sh
+    nixd_ls $NIXD_PREFIX/bin/mongrel2
+    nixd_ls $NIXD_PREFIX/bin/m2sh
 }
 
 resources() {

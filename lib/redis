@@ -4,7 +4,7 @@ ARCHIVE=redis-2.6.7.tar.gz
 UNPACKED=redis-2.6.7
 
 check() {
-    ls $NIXD_PREFIX/bin/redis-server
+    nixd_ls $NIXD_PREFIX/bin/redis-server
 }
 
 resources() {

@@ -45,6 +45,7 @@ declare NIXD_RES    # base path where package resources are downloaded (dynamic)
 declare -f nixd_echo                 > /dev/null
 declare -f nixd_error                > /dev/null
 declare -f nixd_run                  > /dev/null
+declare -f nixd_ls                   > /dev/null
 
 # Implementation details exposed in environment, set in main function.
 declare NIXD_DIR
@@ -127,6 +128,23 @@ nixd_run() {
     $command "$@"
 }
 
+nixd_ls() {
+    # Return success if file exists, error if not.
+    #
+    # Programs ls and file are more readable, but they have output by default
+    # and therefore are verbose during typical nixd execution. This custom
+    # implementation also provides name-prefixed logging.
+
+    for path in "$@"; do
+        if ( ls $path > /dev/null 2>&1 ); then
+            nixd_echo "$path exists."
+            return 0
+        else
+            nixd_echo "$path does not exist."
+            return 1
+        fi
+    done
+}
 
 # Begin per-package functions.
 #
@@ -529,7 +547,7 @@ main() {
     echo_environment
 
     # Export utility functions for use in package scripts written in bash.
-    export -f nixd_echo nixd_error nixd_run
+    export -f nixd_echo nixd_error nixd_run nixd_ls
 
     # Prefix PATH with NIXD_BIN directory.
     export PATH=$NIXD_BIN:$PATH
