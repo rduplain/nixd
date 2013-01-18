@@ -325,6 +325,8 @@ run_package_install() {
 map_scripts() {
     # Execute <first_argument> for each executable in <second_argument> string.
     #
+    # Stop at first failed execution, returning the corresponding exit code.
+    #
     # This is useful in mapping the given function to all executables in the
     # nixd sbin directory. Note that the executable paths must be absolute if
     # current working directory changes during the execution of the mapped
@@ -353,6 +355,15 @@ map_scripts() {
             let count=count+1
             export NIXD_NAME="$( basename "$exe" )"
             $command $exe
+
+            # Exit if the execution failed.
+            #
+            # Use exit code inspection $? instead of 'if ( $command $exe )'
+            # test to avoid unnecessary subshell.
+            local result=$?
+            if [ $result -ne 0 ]; then
+                return $result
+            fi
         else
             nixd_error "$exe is not executable. Skipping."
         fi
