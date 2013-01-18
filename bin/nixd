@@ -153,6 +153,20 @@ nixd_ls() {
 # (typically one word) user-friendly label of the function's purpose -- to
 # support introspection.
 
+quick_check() {
+    # Run `exe check` silently.
+
+    local exe=$1
+    shift
+
+    if [ -z "$exe" ]; then
+        echo quick check # declare this function's purpose
+        return
+    fi
+
+    $exe check > /dev/null 2>&1
+}
+
 install_package() {
     # Downloads resources specified by `exe resources` then runs `exe install`.
     #
@@ -453,19 +467,36 @@ check_for_program() {
 install() {
     # Find all package scripts, download their resources, then install them.
 
+    local paths=""
+    if [ $# -eq 0 ]; then
+        paths="`expand_executable_paths all`"
+    else
+        paths="`expand_executable_paths "$@"`"
+    fi
+
+    # Stop now if there's no work to do.
+    if ( map_scripts quick_check $paths ); then
+        nixd_echo "Everything checks out. No work to do."
+        return
+    fi
+
+    # Since there is work to do, default to verbose.
+    export NIXD_VERBOSE=${NIXD_VERBOSE:-"true"}
+    echo_environment
+
     # Create additional directories.
     mkdir -p $NIXD_OPT
     mkdir -p $NIXD_VAR
 
-    if [ $# -eq 0 ]; then
-        map_scripts install_package `expand_executable_paths all`
-    else
-        map_scripts install_package `expand_executable_paths "$@"`
-    fi
+    # Install.
+    map_scripts install_package $paths
 }
 
 download() {
     # Find all package scripts and download their resources.
+
+    # Default to verbose.
+    export NIXD_VERBOSE=${NIXD_VERBOSE:-"true"}
 
     if [ $# -eq 0 ]; then
         map_scripts download_package_resources `expand_executable_paths all`
@@ -532,7 +563,7 @@ main() {
     NIXD_VAR=${NIXD_VAR:-$NIXD_DIR/var}
 
     # Verbose mode.
-    # When nixd gets a full command-line parser, this will look for '-v'.
+    # When nixd gets a full command-line parser, this could look for '-v'.
     NIXD_VERBOSE=${NIXD_VERBOSE:-""}
 
     # Exit immediately if a command error or non-zero return occurs.
