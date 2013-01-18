@@ -7,7 +7,9 @@
 *.html
 *.log
 __MACOSX
+/opt/
 /sbin/
 /src/
 *.sw*
 /usr/
+/var/
