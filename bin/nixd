@@ -140,7 +140,7 @@ nixd_ls() {
             nixd_echo "$path exists."
             return 0
         else
-            nixd_echo "$path does not exist."
+            nixd_error "$path does not exist."
             return 1
         fi
     done
