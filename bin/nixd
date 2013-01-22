@@ -50,6 +50,7 @@ declare -f nixd_ls                   > /dev/null
 # Implementation details exposed in environment, set in main function.
 declare NIXD_DIR
 declare NIXD_VERBOSE
+declare NIXD_INVOCATION
 
 # The name of this executable program, set in main function.
 declare PROG
@@ -510,6 +511,29 @@ pass() {
 }
 
 
+# Begin trap functions to run when nixd is finishing execution.
+
+trap_int() {
+    # Execute on INT signal.
+
+    nixd_echo Interrupted.
+}
+
+trap_term() {
+    # Execute on TERM signal.
+
+    nixd_echo Terminated.
+}
+
+trap_exit() {
+    # Execute when program exits, EXIT signal. Act on 'set -e' non-zero exits.
+
+    if [ $? -ne 0 ]; then
+        nixd_error "Fatal. Run 'bash -x $NIXD_INVOCATION' for debug trace."
+    fi
+}
+
+
 # Begin user-exposed subcommands.
 
 install() {
@@ -579,6 +603,9 @@ selfinstall() {
 main() {
     # The main routine of the nixd program itself.
 
+    # Capture full program invocation for debugging.
+    NIXD_INVOCATION="${BASH_SOURCE[0]} $*"
+
     # The name of this executable program.
     PROG="$( basename "${BASH_SOURCE[0]}" )"
 
@@ -613,6 +640,11 @@ main() {
     # When nixd gets a full command-line parser, this could look for '-v'.
     NIXD_VERBOSE=${NIXD_VERBOSE:-""}
 
+    # Set traps to be clear why nixd exits.
+    trap trap_int INT
+    trap trap_term TERM
+    trap trap_exit EXIT
+
     # Exit immediately if a command error or non-zero return occurs.
     set -e
 
@@ -632,7 +664,7 @@ main() {
 
     # Export nixd environment variables for use in package scripts.
     export NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC NIXD_OPT NIXD_VAR
-    export NIXD_DIR NIXD_VERBOSE
+    export NIXD_DIR NIXD_VERBOSE NIXD_INVOCATION
 
     # Export utility functions for use in package scripts written in bash.
     export -f nixd_echo nixd_error nixd_run nixd_ls
