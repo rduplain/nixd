@@ -184,10 +184,11 @@ install_package() {
 
     nixd_echo "checking..."
     if ( $exe check ); then
-        nixd_echo "already configured."
+        nixd_echo "already installed."
     else
-        download_package_resources $exe
-        run_package_pretest $exe
+        # Essential '&&': execution stops immediately on error with 'set -e'.
+        download_package_resources $exe &&
+        run_package_pretest $exe &&
         run_package_install $exe
     fi
 }
