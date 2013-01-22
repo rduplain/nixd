@@ -525,14 +525,6 @@ trap_term() {
     nixd_echo Terminated.
 }
 
-trap_exit() {
-    # Execute when program exits, EXIT signal. Act on 'set -e' non-zero exits.
-
-    if [ $? -ne 0 ]; then
-        nixd_error "Fatal. Run 'bash -x $NIXD_INVOCATION' for debug trace."
-    fi
-}
-
 
 # Begin user-exposed subcommands.
 
@@ -643,7 +635,6 @@ main() {
     # Set traps to be clear why nixd exits.
     trap trap_int INT
     trap trap_term TERM
-    trap trap_exit EXIT
 
     # Exit immediately if a command error or non-zero return occurs.
     set -e
