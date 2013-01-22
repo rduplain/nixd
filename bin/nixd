@@ -236,6 +236,11 @@ download_package_resources() {
 
     # Download each resource.
     map_lines download_resource "$resources"
+    local result=$?
+    if [ $result -ne 0 ]; then
+        nixd_error "failed to download."
+        return $result
+    fi
 
     # Count the number of lines.
     local -i count=`echo "$resources" | wc -l`
@@ -461,7 +466,12 @@ map_lines() {
     for line in $lines; do
         IFS="$OLD_IFS"
         $line_function $line
+        local result=$?
         IFS="$NEW_IFS"
+        if [ $result -ne 0 ]; then
+            # Ensure errors do not get swallowed in this loop.
+            return $result
+        fi
     done
     IFS="$OLD_IFS"
 }
