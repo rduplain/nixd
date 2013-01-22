@@ -390,15 +390,21 @@ map_scripts() {
 
     local count=0
     for exe in $@; do
-        export NIXD_NAME="$( basename "$exe" )"
-        export NIXD_RES=$NIXD_SRC/$NIXD_NAME
+        # Don't set NIXD_NAME before continue statements.
+        local name="$( basename "$exe" )"
 
-        # Skip reserved keywords: nixd, all.
-        if [ "$NIXD_NAME" = "$PROG" ]; then
+        # Skip empty glob '*' and reserved keywords: nixd, all.
+        if [ "$name" = "*" ]; then
             continue
-        elif [ "$NIXD_NAME" = "all" ]; then
+        elif [ "$name" = "$PROG" ]; then
+            continue
+        elif [ "$name" = "all" ]; then
             continue
         fi
+
+        # Set per-package variables.
+        export NIXD_NAME="$name"
+        export NIXD_RES=$NIXD_SRC/$NIXD_NAME
 
         if [ -x $exe ]; then
             let count=count+1
