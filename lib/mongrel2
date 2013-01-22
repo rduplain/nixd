@@ -12,8 +12,11 @@ resources() {
     echo https://github.com/zedshaw/mongrel2/archive/v1.8.0.tar.gz $ARCHIVE
 }
 
-install() {
+pretest() {
     check_headers sqlite3.h zmq.h
+}
+
+install() {
     tar -xzf $ARCHIVE
     cd $UNPACKED
     PREFIX=$NIXD_PREFIX make install

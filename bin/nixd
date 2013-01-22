@@ -186,6 +186,7 @@ install_package() {
         nixd_echo "already configured."
     else
         download_package_resources $exe
+        run_package_pretest $exe
         run_package_install $exe
     fi
 }
@@ -299,6 +300,41 @@ download_resource() {
         nixd_echo "downloading $local_name from $url"
         curl -L -o $local_name $url # Use '-L' to follow redirects.
     fi
+}
+
+run_package_pretest() {
+    # Run `exe pretest` in the package's resource directory.
+    #
+    # This resource directory will have anything downloaded for the package,
+    # and is still created if no resources are needed, to allow the package
+    # script to create any scratch or temporary files.
+
+    local exe=$1
+    shift
+
+    if [ -z "$exe" ]; then
+        echo pretest # declare this function's purpose
+        return
+    fi
+
+    mkdir -p $NIXD_RES
+    pushd $NIXD_RES > /dev/null
+
+    local result=0
+    nixd_echo "running pretest..."
+    if ( $exe pretest ); then
+        nixd_echo "pretest passed."
+    elif [ $? -eq 127 ]; then
+        # Not implemented; still returns 0 in run_package_pretest.
+        # nixd_run already calls nixd_error with log message.
+        pass
+    else
+        result=$?
+        nixd_error "pretest failed with non-zero status: $result"
+    fi
+
+    popd > /dev/null
+    return $result
 }
 
 run_package_install() {
@@ -459,6 +495,12 @@ check_for_program() {
             return 3
         fi
     done
+}
+
+pass() {
+    # No operation.
+
+    :
 }
 
 

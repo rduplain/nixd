@@ -85,21 +85,22 @@ pattern is:
 
 * *check* - exit with status 0 if already installed, non-zero otherwise.
 * *resources* - print required downloads to stdout, one on each line.
+* *pretest* - test for install dependencies, system headers (optional).
 * *install* - unpack those downloads and install them to `$NIXD_PREFIX`.
 
 Unix conventions apply. Each script in `nixd/sbin` must be executable. The
 script is invoked `nixd/sbin/scriptname subcommand` where subcommand is
-*check*, *resources*, or *install*. An exit status of 0 indicates success, and
-a non-zero exit status indicates an error (which should stop nixd
+*check*, *resources*, *pretest*, or *install*. An exit status of 0 indicates
+success, and a non-zero exit status indicates an error (which should stop nixd
 execution). Commands *check* and *install* do not have any stdio requirements,
 but *resources* must declare line-by-line its required URLs to stdout.
 
 It's important to declare all direct downloads through the *resources*
 subcommand. This lets nixd manage the downloads and support caching & in-house
-mirroring. The *install* subcommand is run with a working directory where the
-resources are downloaded. To provide meaningful filenames, you can list a local
-filename on the same line as the URL, separated by a space. Use a format of one
-of:
+mirroring. The *pretest* and *install* subcommands are run with a working
+directory where the resources are downloaded. To provide meaningful filenames,
+you can list a local filename on the same line as the URL, separated by a
+space. Use a format of one of:
 
     http://example.com/package.tar.gz
     http://example.com/1.0/package.tar.gz package-1.0.tar.gz
