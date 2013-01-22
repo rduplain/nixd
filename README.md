@@ -232,5 +232,11 @@ underlying operating systems, "fail immediately" could lead to a quiet
 error. In this case, run `bash -x nixd/bin/nixd install` (or other subcommand)
 to see the trace in bash to determine where it failed.
 
+Principle #6 indicates that a modern GNU bash is required prior to running
+nixd. nixd is designed for portability *on top of* GNU bash, and does not
+guarantee absolute portability in the way that autoconf does. Instead, nixd
+fills the gap between a commissioned operating system and a configured runtime
+for a development team's application stack.
+
 
 Copyright (c) 2012-2013, Ron DuPlain. BSD licensed.
