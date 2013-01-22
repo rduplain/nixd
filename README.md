@@ -84,7 +84,7 @@ Next, add scripts to `nixd/sbin/` to provide packages for your environment. See
 pattern is:
 
 * *check* - exit with status 0 if already installed, non-zero otherwise.
-* *resources* - print required downloads to stdout, one on each line.
+* *resources* - print required downloads to stdout, one per line (optional).
 * *pretest* - test for install dependencies, system headers (optional).
 * *install* - unpack those downloads and install them to `$NIXD_PREFIX`.
 
