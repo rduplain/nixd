@@ -204,6 +204,15 @@ You could also use the filesystem, or any other URL that curl understands:
     NIXD_MIRROR=file:///var/lib/nixd/src/ ./bin/nixd install
 
 
+### Exit Codes
+
+    0: Success
+    1: General error
+    2: Incorrect invocation
+    3: Bad configuration of nixd
+    127: Command not implemented (for use in optional package commands)
+
+
 ### Design Principles
 
 1. Clearly log activity. Fail loudly and immediately. Make it obvious.
