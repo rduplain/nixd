@@ -55,7 +55,7 @@ declare NIXD_VERBOSE
 declare PROG
 
 usage() {
-    # Print nixd program usage to stderr and return 1.
+    # Print nixd program usage to stderr and return 2.
 
     exec >&2 # Redirect all further stdout to stderr.
 
@@ -74,7 +74,7 @@ usage() {
     echo "install     - Install stack configured by sbin scripts."
     echo "download    - Download all resources declared by sbin scripts."
     echo "selfinstall - Install this nixd executable into a new project."
-    return 1
+    return 2
 }
 
 
@@ -118,10 +118,10 @@ nixd_run() {
     set -e
 
     if [ -z "$command_type" ]; then
-        nixd_error "$NIXD_NAME: $command is not implemented."
-        return 2
+        nixd_error "$command is not implemented."
+        return 127
     elif [ "$command_type" != "function" ]; then
-        nixd_error "$NIXD_NAME: $command is not a valid command."
+        nixd_error "$command is not a valid command."
         return 2
     fi
 
@@ -220,7 +220,7 @@ download_package_resources() {
 
     if [ -z "$resources" ]; then
         nixd_echo "no resources to download."
-        return 0
+        return
     fi
 
     # Log each resource, prefixed by the nixd name.
@@ -270,10 +270,10 @@ download_resource() {
     # Flight check.
     if [ ${#tokens[@]} -eq 0 ]; then
         nixd_error "$NIXD_NAME: No argument given to `download_resource`."
-        return 1
+        return 3
     elif [ ${#tokens[@]} -gt 2 ]; then
         nixd_error "$NIXD_NAME: resource error - more than 2 fields: $resource"
-        return 1
+        return 3
     fi
 
     # Parse tokens.
@@ -387,7 +387,7 @@ map_scripts() {
 
     if [ $count -eq 0 ]; then
         nixd_error "nothing to run. No scripts found in $NIXD_SBIN."
-        return 1
+        return 3
     elif [ $count -eq 1 ]; then
         nixd_echo "finished $label with $count package."
     else
@@ -456,7 +456,7 @@ check_for_program() {
     for program in $@; do
         if ( ! which $program > /dev/null ); then
             nixd_error "requires '$program' program, but could not find it."
-            return 1
+            return 3
         fi
     done
 }
@@ -515,7 +515,7 @@ selfinstall() {
         echo
         echo "    $PROG selfinstall ."
         echo "    $PROG selfinstall ~/projects/foo"
-        return 1
+        return 2
     else
         local destination=$1/nixd/bin
         shift
