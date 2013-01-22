@@ -219,8 +219,20 @@ download_package_resources() {
         return
     fi
 
-    local resources=$( $exe resources )
+    # Keep local on its own line to capture the exit code of the subshell.
+    # Note that 'local' itself returns 0, swallowing the exit code in effect.
+    local resources
+    resources=$( $exe resources )
+    local resources_exit=$?
 
+    # Expose errors which occured in calling the resources subcommand.
+    # Status code 0 is success and 127 is not implemented.
+    if [ $resources_exit -ne 0 ] && [ $resources_exit -ne 127 ]; then
+        nixd_error "resources failed with non-zero status: $resources_exit"
+        return $resources_exit
+    fi
+
+    # Stop now if there are no resources to download.
     if [ -z "$resources" ]; then
         nixd_echo "no resources to download."
         return

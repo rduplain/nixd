@@ -4,10 +4,6 @@ check() {
     return 1
 }
 
-resources() {
-    return 0
-}
-
 install() {
     return 0
 }
