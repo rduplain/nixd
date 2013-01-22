@@ -410,6 +410,10 @@ map_scripts() {
             let count=count+1
             export NIXD_NAME="$( basename "$exe" )"
 
+            # Test for script exit code explicitly. Reasons:
+            #
+            # 1. 'set -e' has curious behavior for deeply nested commands.
+            # 2. Enable override of 'set -e' to continue on script failure.
             if ( $command $exe ); then
                 pass
             else
