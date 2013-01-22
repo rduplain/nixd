@@ -355,13 +355,12 @@ run_package_install() {
     mkdir -p $NIXD_RES
     pushd $NIXD_RES > /dev/null
 
+    local result=0
     nixd_echo "installing..."
-    $exe install
-
-    local result=$?
-    if [ $result -eq 0 ]; then
+    if ( $exe install ); then
         nixd_echo "installed."
     else
+        result=$?
         nixd_error "install had non-zero status: $result"
     fi
 
@@ -404,15 +403,12 @@ map_scripts() {
         if [ -x $exe ]; then
             let count=count+1
             export NIXD_NAME="$( basename "$exe" )"
-            $command $exe
 
-            # Exit if the execution failed.
-            #
-            # Use exit code inspection $? instead of 'if ( $command $exe )'
-            # test to avoid unnecessary subshell.
-            local result=$?
-            if [ $result -ne 0 ]; then
-                return $result
+            if ( $command $exe ); then
+                pass
+            else
+                # Stop now since an execution failed, returning exit code.
+                return $?
             fi
         else
             nixd_error "$exe is not executable. Skipping."
