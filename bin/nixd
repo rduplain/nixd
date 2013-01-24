@@ -440,14 +440,14 @@ map_scripts() {
                 return $?
             fi
         else
-            nixd_error "$exe is not executable. Skipping."
+            nixd_error "$exe is not executable; skipping."
         fi
 
         unset NIXD_NAME NIXD_RES
     done
 
     if [ $count -eq 0 ]; then
-        nixd_error "nothing to run. No scripts found in $NIXD_SBIN."
+        nixd_error "nothing to run; no scripts found in $NIXD_SBIN."
         return 3
     elif [ $count -eq 1 ]; then
         nixd_echo "finished $label with $count package."
@@ -563,7 +563,7 @@ install() {
 
     # Stop now if there's no work to do.
     if ( map_scripts quick_check $paths ); then
-        nixd_echo "Everything checks out. No work to do."
+        nixd_echo "Everything checks out; no work to do."
         return
     fi
 
