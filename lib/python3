@@ -13,8 +13,11 @@ resources() {
     echo http://pypi.python.org/packages/source/v/virtualenv/$ARCHIVE
 }
 
-install() {
+pretest() {
     nixd check_for_program python3
+}
+
+install() {
     tar -xzf $ARCHIVE
     VIRTUALENV_PY=`pwd`/$UNPACKED/virtualenv.py
     nixd_echo "Ensuring virtualenv.py is unpacked..."

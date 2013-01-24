@@ -15,6 +15,7 @@ pretest() {
 
 install() {
     $NIXD_OPT/python2/bin/pip install circus
+    mkdir -p $NIXD_PREFIX/bin
     pushd $NIXD_PREFIX/bin
     nixd_ls ../../opt/python2/bin/circusd
     ln -sf ../../opt/python2/bin/circus* .
