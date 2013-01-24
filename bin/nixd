@@ -729,7 +729,7 @@ main() {
         usage "$PROG: $command is not a valid command."
     fi
 
-    check_for_program basename dirname curl wc
+    check_for_program basename dirname curl wc touch
 
     # Export nixd environment variables for use in package scripts.
     export NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC NIXD_OPT NIXD_VAR
