@@ -138,7 +138,8 @@ nixd_ls() {
     # implementation also provides name-prefixed logging.
 
     for path in "$@"; do
-        if ( ls $path > /dev/null 2>&1 ); then
+        # Use -e test instead of `ls` to catch bad symlinks.
+        if [ -e $path ]; then
             nixd_echo "$path exists."
             return 0
         else
