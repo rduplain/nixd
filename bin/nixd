@@ -491,8 +491,11 @@ map_scripts() {
                 # Stop now since an execution failed, returning exit code.
                 return $?
             fi
-        else
+        elif [ -e $exe ]; then
             nixd_error "$exe is not executable; skipping."
+        else
+            nixd_error "$exe does not exist."
+            return 3
         fi
 
         unset NIXD_NAME NIXD_RES
@@ -614,7 +617,7 @@ install() {
     fi
 
     # Stop now if there's no work to do.
-    if ( map_scripts quick_check $paths ); then
+    if ( map_scripts quick_check $paths > /dev/null 2>&1 ); then
         nixd_echo "Everything checks out; no work to do."
         return
     fi
