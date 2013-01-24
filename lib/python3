@@ -1,0 +1,27 @@
+#!/bin/bash
+
+ARCHIVE=virtualenv-1.8.4.tar.gz
+UNPACKED=virtualenv-1.8.4
+PREFIX=$NIXD_OPT/python3
+
+check() {
+    nixd_ls $PREFIX/bin/python
+    nixd_ls $PREFIX/bin/pip
+}
+
+resources() {
+    echo http://pypi.python.org/packages/source/v/virtualenv/$ARCHIVE
+}
+
+install() {
+    nixd check_for_program python3
+    tar -xzf $ARCHIVE
+    VIRTUALENV_PY=`pwd`/$UNPACKED/virtualenv.py
+    nixd_echo "Ensuring virtualenv.py is unpacked..."
+    nixd_ls $VIRTUALENV_PY
+    nixd_echo "Installing virtualenv to $PREFIX..."
+    cd $NIXD_OPT
+    python3 $VIRTUALENV_PY --distribute --no-site-packages python3
+}
+
+nixd_run "$@"

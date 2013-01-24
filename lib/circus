@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Place project configuration at nixd/etc/circus.ini.
+CIRCUS_INI=${CIRCUS_INI:-$NIXD_ETC/circus.ini}
+
+check() {
+    nixd_newer_than python2
+    nixd_ls $NIXD_PREFIX/bin/circusd
+}
+
+pretest() {
+    check_headers zmq.h
+    nixd_ls $CIRCUS_INI
+}
+
+install() {
+    $NIXD_OPT/python2/bin/pip install circus
+    pushd $NIXD_PREFIX/bin
+    nixd_ls ../../opt/python2/bin/circusd
+    ln -sf ../../opt/python2/bin/circus* .
+}
+
+nixd_run "$@"

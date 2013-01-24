@@ -1,0 +1,18 @@
+#!/bin/bash
+
+REQUIREMENTS=$NIXD_ETC/python3-requirements.txt
+PIP=$NIXD_OPT/python3/bin/pip
+
+check() {
+    nixd_newer_than python3 $REQUIREMENTS
+}
+
+pretest() {
+    nixd_ls $REQUIREMENTS
+}
+
+install() {
+    $PIP install -r $REQUIREMENTS
+}
+
+nixd_run "$@"

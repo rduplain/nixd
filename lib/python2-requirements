@@ -1,0 +1,18 @@
+#!/bin/bash
+
+REQUIREMENTS=$NIXD_ETC/python2-requirements.txt
+PIP=$NIXD_OPT/python2/bin/pip
+
+check() {
+    nixd_newer_than python2 $REQUIREMENTS
+}
+
+pretest() {
+    nixd_ls $REQUIREMENTS
+}
+
+install() {
+    $PIP install -r $REQUIREMENTS
+}
+
+nixd_run "$@"
