@@ -55,7 +55,12 @@ headers="$@"
 name=$PROG
 version=`date +"%Y-%m-%d_%H%M%S"`
 
-echo -e "AC_INIT($name, $version)\nAC_CHECK_HEADERS($headers)" | \
-    autoconf -> configure && \
-    chmod 755 configure && \
-    ./configure
+set -e
+
+autoconf -> configure <<EOF
+AC_INIT($name, $version)
+AC_CHECK_HEADERS($headers, , AC_MSG_ERROR(missing a development header))
+EOF
+
+chmod 755 configure
+./configure
