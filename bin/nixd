@@ -46,6 +46,7 @@ declare -f nixd_echo                 > /dev/null
 declare -f nixd_error                > /dev/null
 declare -f nixd_run                  > /dev/null
 declare -f nixd_ls                   > /dev/null
+declare -f nixd_newer_than           > /dev/null
 
 # Implementation details exposed in environment, set in main function.
 declare NIXD_DIR
@@ -147,6 +148,53 @@ nixd_ls() {
     done
 }
 
+nixd_newer_than() {
+    # Return success if current package's install is newer than arguments.
+    #
+    # Current package is designated by $NIXD_NAME.
+    #
+    # Arguments can be the name of a local nixd package or a filepath. Specify
+    # a package name to refer to the time when that package was installed.
+    # Specify a filepath to refer to that file's modified time.
+    # $NIXD_VAR/events has touched event files with the same name as the
+    # package and modified times matching the last successful install of that
+    # package.
+    #
+    # Note: when a file in the current $NIXD_SRC directory matches the name of
+    # a package, that file's modification time is used instead of the package
+    # event.
+
+    if [ -z "$NIXD_NAME" ]; then
+        nixd_error NIXD_NAME is unset in nixd_newer_than.
+        return 3
+    fi
+
+    local event=$NIXD_VAR/events/$NIXD_NAME
+    if [ ! -e $event ]; then
+        # Current event does not exist; abort now.
+        return 1
+    fi
+
+    for arg in "$@"; do
+        if [ -e $arg ]; then
+            # Argument points to an existing file.
+            : # pass.
+        elif [ -e $NIXD_VAR/events/$arg ]; then
+            # Argument refers to a nixd event file.
+            arg=$NIXD_VAR/events/$arg
+        else
+            nixd_error "no file or event: $arg"
+            return 2
+        fi
+
+        if [ ! $event -nt $arg ]; then
+            # Found an argument newer than current event.
+            return 1
+        fi
+    done
+}
+
+
 # Begin per-package functions.
 #
 # Each function here follows the same convention: take the path to the package
@@ -182,6 +230,9 @@ install_package() {
         return
     fi
 
+    # Make sure the events directory exists.
+    mkdir -p $NIXD_VAR/events
+
     nixd_echo "checking..."
     if ( $exe check ); then
         nixd_echo "already installed."
@@ -189,7 +240,8 @@ install_package() {
         # Essential '&&': execution stops immediately on error with 'set -e'.
         download_package_resources $exe &&
         run_package_pretest $exe &&
-        run_package_install $exe
+        run_package_install $exe &&
+        touch $NIXD_VAR/events/$NIXD_NAME # See nixd_newer_than.
     fi
 }
 
@@ -681,7 +733,7 @@ main() {
     export NIXD_DIR NIXD_VERBOSE NIXD_INVOCATION
 
     # Export utility functions for use in package scripts written in bash.
-    export -f nixd_echo nixd_error nixd_run nixd_ls
+    export -f nixd_echo nixd_error nixd_run nixd_ls nixd_newer_than
 
     # Prefix PATH with NIXD_BIN directory.
     export PATH=$NIXD_BIN:$PATH
