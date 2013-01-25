@@ -7,9 +7,10 @@
 *.html
 *.log
 __MACOSX
-/opt/
+opt/
+*.pyc
 /sbin/
-/src/
+src/
 *.sw*
-/usr/
-/var/
+usr/
+var/
