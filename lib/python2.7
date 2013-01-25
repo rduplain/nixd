@@ -2,7 +2,7 @@
 
 ARCHIVE=virtualenv-1.8.4.tar.gz
 UNPACKED=virtualenv-1.8.4
-PREFIX=$NIXD_OPT/python2
+PREFIX=$NIXD_OPT/python2.7
 
 check() {
     nixd_ls $PREFIX/bin/python
@@ -14,7 +14,7 @@ resources() {
 }
 
 pretest() {
-    nixd check_for_program python2
+    nixd check_for_program python2.7
 }
 
 install() {
@@ -24,7 +24,7 @@ install() {
     nixd_ls $VIRTUALENV_PY
     nixd_echo "Installing virtualenv to $PREFIX..."
     cd $NIXD_OPT
-    python2 $VIRTUALENV_PY --distribute --no-site-packages python2
+    python2.7 $VIRTUALENV_PY --distribute --no-site-packages python2.7
 }
 
 nixd_run "$@"

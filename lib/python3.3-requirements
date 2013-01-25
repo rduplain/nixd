@@ -1,10 +1,10 @@
 #!/bin/bash
 
-REQUIREMENTS=$NIXD_ETC/python3-requirements.txt
-PIP=$NIXD_OPT/python3/bin/pip
+REQUIREMENTS=$NIXD_ETC/python3.3-requirements.txt
+PIP=$NIXD_OPT/python3.3/bin/pip
 
 check() {
-    nixd_newer_than python3 $REQUIREMENTS
+    nixd_newer_than python3.3 $REQUIREMENTS
 }
 
 pretest() {

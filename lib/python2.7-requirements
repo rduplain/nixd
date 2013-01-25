@@ -1,10 +1,10 @@
 #!/bin/bash
 
-REQUIREMENTS=$NIXD_ETC/python2-requirements.txt
-PIP=$NIXD_OPT/python2/bin/pip
+REQUIREMENTS=$NIXD_ETC/python2.7-requirements.txt
+PIP=$NIXD_OPT/python2.7/bin/pip
 
 check() {
-    nixd_newer_than python2 $REQUIREMENTS
+    nixd_newer_than python2.7 $REQUIREMENTS
 }
 
 pretest() {
