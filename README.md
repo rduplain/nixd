@@ -70,7 +70,11 @@ Create a `nixd` directory within your project, and download the `nixd` program:
     cat nixd/bin/nixd # Read and make sure you are comfortable executing it.
     chmod a+x nixd/bin/nixd
 
-Repeat these instructions verbatim to update `nixd` to the latest version.
+Repeat these instructions verbatim to update `nixd` to the latest
+version. Alternatively, you can load the nixd repository as a git submodule
+(and load the submodule as a target in the Makefile). However, nixd is intended
+for building self-installers for projects, and shipping the `nixd` script will
+ensure the project can reliably run.
 
 If you already have a working `nixd` executable, you can instead use the
 `selfinstall` command to create the `nixd/bin` directory and copy the
