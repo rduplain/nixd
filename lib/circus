@@ -4,7 +4,7 @@
 CIRCUS_INI=${CIRCUS_INI:-$NIXD_ETC/circus.ini}
 
 check() {
-    nixd_newer_than python2
+    nixd_newer_than python2.7
     nixd_ls $NIXD_PREFIX/bin/circusd
 }
 
@@ -14,7 +14,7 @@ pretest() {
 }
 
 install() {
-    $NIXD_OPT/python2/bin/pip install circus
+    $NIXD_OPT/python2.7/bin/pip install circus
     mkdir -p $NIXD_PREFIX/bin
     pushd $NIXD_PREFIX/bin
     nixd_ls ../../opt/python2/bin/circusd
