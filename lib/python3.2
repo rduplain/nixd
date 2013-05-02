@@ -30,13 +30,16 @@ pretest() {
 }
 
 install() {
-    tar -xzf $ARCHIVE
-    VIRTUALENV_PY=`pwd`/$UNPACKED/virtualenv.py
-    nixd_echo "Ensuring virtualenv.py is unpacked ..."
-    nixd_ls $VIRTUALENV_PY
-    nixd_echo "Installing virtualenv to $PREFIX ..."
-    cd $NIXD_OPT
-    $PYTHON $VIRTUALENV_PY --distribute --no-site-packages $PYTHON
+    if [ ! -e $PREFIX/bin/python ]; then
+        nixd_echo "Installing $PYTHON virtualenv."
+        tar -xzf $ARCHIVE
+        VIRTUALENV_PY=`pwd`/$UNPACKED/virtualenv.py
+        nixd_echo "Ensuring virtualenv.py is unpacked ..."
+        nixd_ls $VIRTUALENV_PY
+        nixd_echo "Installing virtualenv to $PREFIX ..."
+        cd $NIXD_OPT
+        $PYTHON $VIRTUALENV_PY --distribute --no-site-packages $PYTHON
+    fi
     nixd_echo "Installing packages listed in $REQUIREMENTS ..."
     $PIP install -r $REQUIREMENTS
 }
