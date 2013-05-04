@@ -252,7 +252,7 @@ install_package() {
     # Make sure the events directory exists.
     mkdir -p $NIXD_VAR/events
 
-    nixd_echo "checking..."
+    nixd_echo "checking ..."
     if ( $exe check ); then
         nixd_echo "already installed."
     else
@@ -411,7 +411,7 @@ run_package_pretest() {
     pushd $NIXD_RES > /dev/null
 
     local result=0
-    nixd_echo "running pretest..."
+    nixd_echo "running pretest ..."
     if ( $exe pretest ); then
         nixd_echo "pretest passed."
     elif [ $? -eq 127 ]; then
@@ -446,7 +446,7 @@ run_package_install() {
     pushd $NIXD_RES > /dev/null
 
     local result=0
-    nixd_echo "installing..."
+    nixd_echo "installing ..."
     if ( $exe install ); then
         nixd_echo "installed."
     else
