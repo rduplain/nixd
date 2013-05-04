@@ -46,6 +46,7 @@ declare -f nixd_echo                 > /dev/null
 declare -f nixd_error                > /dev/null
 declare -f nixd_run                  > /dev/null
 declare -f nixd_ls                   > /dev/null
+declare -f nixd_run_once             > /dev/null
 declare -f nixd_newer_than           > /dev/null
 
 # Implementation details exposed in environment, set in main function.
@@ -147,6 +148,23 @@ nixd_ls() {
             return 1
         fi
     done
+}
+
+nixd_run_once() {
+    # Return success if current package has been run at least once.
+
+    if [ -z "$NIXD_NAME" ]; then
+        nixd_error NIXD_NAME is unset in nixd_run_once.
+        return 3
+    fi
+
+    local event=$NIXD_VAR/events/$NIXD_NAME
+    if [ ! -e $event ]; then
+        # Current event does not exist.
+        return 1
+    fi
+
+    return 0
 }
 
 nixd_newer_than() {
@@ -739,7 +757,8 @@ main() {
     export NIXD_DIR NIXD_VERBOSE NIXD_INVOCATION
 
     # Export utility functions for use in package scripts written in bash.
-    export -f nixd_echo nixd_error nixd_run nixd_ls nixd_newer_than
+    export -f nixd_echo nixd_error nixd_run
+    export -f nixd_ls nixd_run_once nixd_newer_than
 
     # Prefix PATH with NIXD_BIN directory.
     export PATH=$NIXD_BIN:$PATH
