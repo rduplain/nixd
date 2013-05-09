@@ -1,0 +1,61 @@
+#!/bin/bash
+# Load rubygems into a local directory, like a virtualenv. Use GEM_HOME.
+#
+# Disable time-consuming ri and rdoc generation via ~/.gemrc:
+#
+#     install: --no-ri --no-rdoc
+#     update: --no-ri --no-rdoc
+#
+# http://docs.rubygems.org/read/chapter/3
+# http://bruno.im/2011/sep/29/streamline-your-django-workflow/
+
+VERSION=2.0.3
+UNPACKED=rubygems-$VERSION
+ARCHIVE=$UNPACKED.tar.gz
+
+PREFIX=$NIXD_PREFIX
+GEM_HOME=$PREFIX
+GEMFILE=$NIXD_ETC/Gemfile
+
+BUNDLER_VERSION=1.3.5
+
+check() {
+    nixd_ls $PREFIX/bin/gem
+    nixd_ls $PREFIX/bin/bundle
+    nixd_newer_than $GEMFILE
+}
+
+resources() {
+    # rubygems.org does not have https with ARCHIVE=rubygems-2.0.3.tgz
+    # http://production.cf.rubygems.org/rubygems/$ARCHIVE
+    echo https://github.com/rubygems/rubygems/archive/v$VERSION.tar.gz $ARCHIVE
+}
+
+pretest() {
+    nixd check_for_program ruby
+}
+
+install() {
+    if [ ! -e $PREFIX/bin/gem ]; then
+        tar -xzf $ARCHIVE
+        cd $UNPACKED
+        export GEM_HOME
+        export RUBYOPT=rubygems
+        ruby setup.rb --prefix=$PREFIX --no-ri --no-rdoc
+        # On some systems, rubygems only provides 'gem1.8' (1.8 is ruby version).
+        if [ -f $PREFIX/bin/gem[0-9].[0-9] ]; then
+            nixd_echo "symlinking gem executable to 'gem' via nixd."
+            pushd $PREFIX/bin >/dev/null
+            ln -s gem[0-9].[0-9] gem
+            popd >/dev/null
+        fi
+    fi
+    if [ ! -e $PREFIX/bin/bundle ]; then
+       nixd_echo "Installing bundler v$BUNDLER_VERSION ..."
+       $PREFIX/bin/gem install --version "$BUNDLER_VERSION" bundler
+    fi
+    nixd_echo "Installing gems listed in $GEMFILE ..."
+    $PREFIX/bin/bundle install --gemfile=$GEMFILE
+}
+
+nixd_run "$@"
