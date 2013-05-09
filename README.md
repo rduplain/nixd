@@ -1,15 +1,27 @@
-nixd: self-contained configuration management.
-----------------------------------------------
+nixd: automation framework for application environments
+-------------------------------------------------------
 
-nixd is a simple configuration management framework to build development and
-runtime environments for software projects targeting Unix/Unix-like systems.
+### Introduction
+
+nixd is an automation framework to build your application environment for
+development and production. It sits between build tools and configuration
+management engines, and lets you write simple shell scripts with hooks that
+will reliably get you from pristine source to running code in one command, and
+make every attempt to fail with meaningful error messages in context on
+misconfigured systems.
+
+nixd is most useful in polyglot application stacks, such that it provides a
+"virtual environment" at the operating system level, on which you can load
+multiple language runtimes into standalone processes which integrate into a
+process manager, like those which will load a
+[Procfile](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html).
 
 It's pronounced "nixed", like "mixed" but with an 'n'.
 
-Status: alpha, ready for testing across popular Unix/Unix-like systems.
+Status: beta, ready for you to try it out on Unix/Unix-like systems.
 
 
-### Introduction
+### Motivation
 
 Your favorite developer tools and packages include instructions on where to
 download the latest release and how to configure and install for your
