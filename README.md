@@ -14,7 +14,13 @@ nixd is most useful in polyglot application stacks, such that it provides a
 "virtual environment" at the operating system level, on which you can load
 multiple language runtimes into standalone processes which integrate into a
 process manager, like those which will load a
-[Procfile](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html).
+[Procfile](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html). nixd
+can perform the automation you need when first initializing your
+[Vagrant](http://www.vagrantup.com/) machines (which then maps to your
+production machines) or [Docker](http://www.docker.io/) containers. Instead of
+writing one-off scripts or performing manual install tasks, you can use nixd
+hooks and call `nixd install all` as many times as you like and it will figure
+out when it needs to do work.
 
 It's pronounced "nixed", like "mixed" but with an 'n'.
 
