@@ -1,7 +1,7 @@
 #!/bin/bash
 # check_headers: verify system header files are compilable.
 #
-# Packaged with nixd v0.3.
+# Packaged with nixd v0.4-dev.
 #
 # Copyright (c) 2013, Ron DuPlain
 # All rights reserved.
