@@ -1,0 +1,76 @@
+#!/bin/bash
+# Download Solr distribution, unpack start.jar, & install a wrapper script.
+
+VERSION=4.2.1
+UNPACKED=solr-$VERSION
+ARCHIVE=$UNPACKED.tgz
+
+SOLR_EXE=$NIXD_PREFIX/bin/solr
+SOLR_LIB=$NIXD_PREFIX/lib/solr
+SOLR_JAR=$SOLR_LIB/example/start.jar
+
+check() {
+    nixd check_for_program java
+    nixd_ls $SOLR_LIB
+    nixd_ls $SOLR_EXE
+}
+
+resources() {
+    echo http://apache.osuosl.org/lucene/solr/$VERSION/$ARCHIVE
+}
+
+install() {
+    local tarball=$PWD/$ARCHIVE
+    cd ${SOLR_LIB%/*}
+    tar -xzf $tarball
+    mv $UNPACKED solr
+    generate_solr_executable > $SOLR_EXE
+    chmod a+x $SOLR_EXE
+}
+
+generate_solr_executable() {
+cat - <<EOF
+#!/bin/bash
+# solr $VERSION wrapper script written by nixd.
+
+if [ \$# -eq 0 ]; then
+    exec >&2 # Redirect all further stdout to stderr.
+    echo "usage: solr SOLR_HOME [options]"
+    echo
+    echo "Apache Solr $VERSION"
+    echo
+    echo "SOLR_HOME is home directory of solr."
+    echo "See example SOLR_HOME here: $SOLR_LIB/example/solr"
+    echo "To set the port, use: solr SOLR_HOME -Djetty.port=8000"
+    echo
+    echo "This solr script was installed by nixd."
+    exit 2
+fi
+
+export JETTY_HOME=$SOLR_LIB/example
+
+export SOLR_HOME=\$1
+shift
+
+if [ ! -d \$SOLR_HOME ]; then
+    exec >&2 # Redirect all further stdout to stderr.
+    echo "solr: \$SOLR_HOME directory not found."
+    exit 1
+fi
+
+# Use absolute path of SOLR_HOME.
+export SOLR_HOME="\$( cd -P \$SOLR_HOME && pwd )"
+echo "Using SOLR_HOME: \$SOLR_HOME"
+
+# Work out of var directory to let jetty unpack .war files.
+mkdir -p $NIXD_VAR/lib/solr
+cd $NIXD_VAR/lib/solr
+
+exec java -jar $SOLR_JAR \\
+    -Djetty.home="\$JETTY_HOME" \\
+    -Dsolr.solr.home="\$SOLR_HOME" \\
+    "\$@"
+EOF
+}
+
+nixd_run "$@"
