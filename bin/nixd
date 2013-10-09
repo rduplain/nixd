@@ -32,6 +32,7 @@ declare NIXD_MIRROR # Set to URL pointing to NIXD_SRC directory on mirror.
 declare NIXD_PREFIX # prefix to use in installation, absolute nixd/usr (static)
 declare NIXD_BIN    # path to nixd/bin/ for utilities (static)
 declare NIXD_SBIN   # path to nixd/sbin/ for package scripts (static)
+declare NIXD_LIB    # path to nixd/lib/, utilities for package scripts (static)
 declare NIXD_ETC    # path to nixd/etc/, conf for package scripts (static)
 declare NIXD_SRC    # path to nixd/src/, dest for package resources (static)
 declare NIXD_OPT    # path to nixd/opt/, in some package installations (static)
@@ -581,6 +582,7 @@ echo_environment() {
     nixd_echo "NIXD_PREFIX: $NIXD_PREFIX"
     nixd_echo "NIXD_BIN:    $NIXD_BIN"
     nixd_echo "NIXD_SBIN:   $NIXD_SBIN"
+    nixd_echo "NIXD_LIB:    $NIXD_LIB"
     nixd_echo "NIXD_ETC:    $NIXD_ETC"
     nixd_echo "NIXD_SRC:    $NIXD_SRC"
     nixd_echo "NIXD_MIRROR: $NIXD_MIRROR"
@@ -722,6 +724,7 @@ main() {
     NIXD_PREFIX=${NIXD_PREFIX:-$NIXD_DIR/usr}
     NIXD_BIN=${NIXD_BIN:-$NIXD_DIR/bin}
     NIXD_SBIN=${NIXD_SBIN:-$NIXD_DIR/sbin}
+    NIXD_LIB=${NIXD_LIB:-$NIXD_DIR/lib}
     NIXD_ETC=${NIXD_ETC:-$NIXD_DIR/etc}
     NIXD_SRC=${NIXD_SRC:-$NIXD_DIR/src}
     NIXD_OPT=${NIXD_OPT:-$NIXD_DIR/opt}
@@ -753,7 +756,8 @@ main() {
     check_for_program basename dirname wc touch
 
     # Export nixd environment variables for use in package scripts.
-    export NIXD_PREFIX NIXD_BIN NIXD_SBIN NIXD_ETC NIXD_SRC NIXD_OPT NIXD_VAR
+    export NIXD_PREFIX
+    export NIXD_BIN NIXD_SBIN NIXD_LIB NIXD_ETC NIXD_SRC NIXD_OPT NIXD_VAR
     export NIXD_DIR NIXD_VERBOSE NIXD_INVOCATION
 
     # Export utility functions for use in package scripts written in bash.
