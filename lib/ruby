@@ -52,7 +52,7 @@ install() {
     fi
     if [ ! -e $PREFIX/bin/bundle ]; then
        nixd_echo "Installing bundler v$BUNDLER_VERSION ..."
-       $PREFIX/bin/gem install --version "$BUNDLER_VERSION" bundler
+       $PREFIX/bin/gem install --no-user-install --version "$BUNDLER_VERSION" bundler
     fi
     nixd_echo "Installing gems listed in $GEMFILE ..."
     $PREFIX/bin/bundle install --gemfile=$GEMFILE

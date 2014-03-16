@@ -2,9 +2,11 @@
 
 UNPACKED=redis-2.6.13
 ARCHIVE=$UNPACKED.tar.gz
+VARLIB=$NIXD_VAR/lib/redis
 
 check() {
     nixd_ls $NIXD_PREFIX/bin/redis-server
+    nixd_ls $VARLIB
 }
 
 resources() {
@@ -15,6 +17,7 @@ install() {
     tar -xzf $ARCHIVE
     cd $UNPACKED
     PREFIX=$NIXD_PREFIX make install
+    mkdir -p $VARLIB
 }
 
 nixd_run "$@"

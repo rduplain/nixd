@@ -20,10 +20,15 @@ resources() {
 }
 
 install() {
-    local tarball=$PWD/$ARCHIVE
-    cd ${SOLR_LIB%/*}
-    tar -xzf $tarball
-    mv $UNPACKED solr
+    if [ ! -e $SOLR_LIB ]; then
+        local tarball=$PWD/$ARCHIVE
+        local dir=${SOLR_LIB%/*}
+        mkdir -p $dir
+        cd $dir
+        tar -xzf $tarball
+        mv -v $UNPACKED solr
+    fi
+    mkdir -p ${SOLR_EXE%/*}
     generate_solr_executable > $SOLR_EXE
     chmod a+x $SOLR_EXE
 }
@@ -33,6 +38,11 @@ cat - <<EOF
 #!/bin/bash
 # solr $VERSION wrapper script written by nixd.
 
+export NIXD_VAR=$NIXD_VAR
+export SOLR_LIB=$SOLR_LIB
+export SOLR_JAR=$SOLR_JAR
+export JETTY_HOME=\$SOLR_LIB/example
+
 if [ \$# -eq 0 ]; then
     exec >&2 # Redirect all further stdout to stderr.
     echo "usage: solr SOLR_HOME [options]"
@@ -40,14 +50,12 @@ if [ \$# -eq 0 ]; then
     echo "Apache Solr $VERSION"
     echo
     echo "SOLR_HOME is home directory of solr."
-    echo "See example SOLR_HOME here: $SOLR_LIB/example/solr"
+    echo "See example SOLR_HOME here: \$SOLR_LIB/example/solr"
     echo "To set the port, use: solr SOLR_HOME -Djetty.port=8000"
     echo
     echo "This solr script was installed by nixd."
     exit 2
 fi
-
-export JETTY_HOME=$SOLR_LIB/example
 
 export SOLR_HOME=\$1
 shift
@@ -60,16 +68,21 @@ fi
 
 # Use absolute path of SOLR_HOME.
 export SOLR_HOME="\$( cd -P \$SOLR_HOME && pwd )"
+
+if [ -e \$SOLR_HOME/logging.properties ]; then
+    extra="-Djava.util.logging.config.file=\$SOLR_HOME/logging.properties"
+fi
+
 echo "Using SOLR_HOME: \$SOLR_HOME"
 
 # Work out of var directory to let jetty unpack .war files.
-mkdir -p $NIXD_VAR/lib/solr
-cd $NIXD_VAR/lib/solr
+mkdir -p \$NIXD_VAR/lib/solr
+cd \$NIXD_VAR/lib/solr
 
-exec java -jar $SOLR_JAR \\
+exec java -jar \$SOLR_JAR --exec \\
     -Djetty.home="\$JETTY_HOME" \\
     -Dsolr.solr.home="\$SOLR_HOME" \\
-    "\$@"
+    \$extra "\$@"
 EOF
 }
 

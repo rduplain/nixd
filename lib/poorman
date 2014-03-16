@@ -3,6 +3,7 @@
 
 check() {
     nixd_ls $NIXD_PREFIX/bin/poorman
+    nixd_run_once # Run again if this nixd script is changed.
 }
 
 resources() {
@@ -10,7 +11,8 @@ resources() {
 }
 
 install() {
-    nixd_echo "Verifying download was a script and not a redirect page ..."
+    nixd_echo "Verify download was a script and not a redirect page."
+    nixd_echo "Check that poorman contains 'POORMAN_NAME' text ..."
     if ( ! grep -q POORMAN_NAME poorman ); then
         nixd_error "Downloaded poorman script does not appear valid."
         return 1
