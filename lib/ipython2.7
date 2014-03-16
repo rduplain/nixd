@@ -1,0 +1,27 @@
+#!/bin/bash
+# Install ipython notebook into the nixd python2.7 virtualenv.
+
+PYTHON=python2.7
+PREFIX=$NIXD_OPT/$PYTHON
+PIP=$PREFIX/bin/pip
+
+check() {
+    # Run at least once, and again if nixd re-ran python install.
+    nixd_newer_than $PYTHON
+}
+
+pretest() {
+    nixd_ls $PIP
+    check_headers $PYTHON/Python.h zmq.h
+}
+
+install() {
+    # Install packages in tiers.
+    $PIP install cython
+    $PIP install numpy numexpr
+    $PIP install matplotlib pandas
+    $PIP install pyzmq
+    $PIP install ipython
+}
+
+nixd_run "$@"
