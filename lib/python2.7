@@ -8,16 +8,20 @@
 PYTHON=python2.7
 PREFIX=$NIXD_OPT/$PYTHON
 
-UNPACKED=virtualenv-1.9.1
+UNPACKED=virtualenv-1.11.4
 ARCHIVE=$UNPACKED.tar.gz
 
 REQUIREMENTS=$NIXD_ETC/$PYTHON-requirements.txt
 PIP=$PREFIX/bin/pip
 
+export PIP_DOWNLOAD_CACHE=${PIP_DOWNLOAD_CACHE-$NIXD_SRC}
+
 check() {
     nixd_ls $PREFIX/bin/python
     nixd_ls $PREFIX/bin/pip
-    nixd_newer_than $REQUIREMENTS
+    if [ -e $REQUIREMENTS ]; then
+        nixd_newer_than $REQUIREMENTS
+    fi
 }
 
 resources() {
@@ -26,7 +30,6 @@ resources() {
 
 pretest() {
     nixd check_for_program $PYTHON
-    nixd_ls $REQUIREMENTS
 }
 
 install() {
@@ -40,8 +43,10 @@ install() {
         cd $NIXD_OPT
         $PYTHON $VIRTUALENV_PY --distribute --no-site-packages $PYTHON
     fi
-    nixd_echo "Installing packages listed in $REQUIREMENTS ..."
-    $PIP install -r $REQUIREMENTS
+    if [ -e $REQUIREMENTS ]; then
+        nixd_echo "Installing packages listed in $REQUIREMENTS ..."
+        $PIP install -r $REQUIREMENTS
+    fi
 }
 
 nixd_run "$@"
