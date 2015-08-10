@@ -403,7 +403,7 @@ download_resource() {
 
     # Parse tokens.
     local url=${tokens[0]}
-    local local_name=${tokens[1]}
+    local local_name="${tokens[1]}"
     local checksum_function=${tokens[2]}
     local checksum_value=${tokens[3]}
 
@@ -417,19 +417,19 @@ download_resource() {
 
     # Swap out given URL with mirror if configured.
     if [ -n "$NIXD_MIRROR" ]; then
-        url=$NIXD_MIRROR/$NIXD_NAME/$local_name
+        url="$NIXD_MIRROR/$NIXD_NAME/$local_name"
     fi
 
-    if [ -e $local_name ]; then
+    if [ -e "$local_name" ]; then
         nixd_echo "using existing $local_name"
     else
         nixd_echo "downloading $local_name from $url"
-        curl -L -o $local_name $url # Use '-L' to follow redirects.
+        curl -L -o "$local_name" $url # Use '-L' to follow redirects.
         if [ -z "${checksum_function}${checksum_value}" ]; then
             nixd_echo "no checksum given; using without checking: $local_name"
         elif ! checksum "$local_name" $checksum_function $checksum_value; then
             nixd_error "download failed checksum: $local_name"
-            rm -f $local_name
+            rm -f "$local_name"
             return 1
         fi
     fi
@@ -638,7 +638,7 @@ checksum() {
         return 2
     fi
 
-    local filename=$1
+    local filename="$1"
     local hash_function=$2
     local hash_value=$3
     shift 3
@@ -647,9 +647,8 @@ checksum() {
 
     case "$hash_function" in
         "sha1" | "sha224" | "sha256" | "sha384" | "sha512" | "md5" )
-            # Note that 'local' itself returns 0.
-            local dgst_output
-            dgst_output=$( openssl dgst -$hash_function $filename )
+            local dgst_output # `local` itself returns 0.
+            dgst_output=$( openssl dgst -$hash_function "$filename" )
             local dgst_exit=$?
 
             echo "$dgst_output"
@@ -659,7 +658,8 @@ checksum() {
                 return $dsgt_exit
             fi
 
-            local dgst_value=$( echo "$dgst_output" | cut -f 2 -d ' ' )
+            local dgst_value=$( echo "$dgst_output" | cut -f 2 -d '=' )
+            dgst_value=${dgst_value// /} # Remove all spaces from hash value.
             if [ -z "dgst_value" ]; then
                 nixd_error "Unable to parse hash value from openssl dgst call."
                 return 1

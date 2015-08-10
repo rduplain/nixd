@@ -37,7 +37,7 @@ main() {
         usage
     fi
 
-    local nixd=$1
+    local nixd="$1"
     local git_commit_or_url=$2
     local hash_function=$3
     local hash_value=$4
@@ -48,12 +48,12 @@ main() {
         return 3
     fi
 
-    if [ -e $nixd ]; then
+    if [ -e "$nixd" ]; then
         echo "Abort. File already exists: $nixd" >&2
         return 2
     fi
 
-    trap "rm -vf $nixd" SIGINT SIGTERM EXIT
+    trap "rm -vf '$nixd'" SIGINT SIGTERM EXIT
 
     local url
     case "$git_commit_or_url" in
@@ -65,24 +65,24 @@ main() {
             ;;
     esac
 
-    local dir=$( dirname $nixd )
-    mkdir -p $dir
+    local dir=$( dirname "$nixd" )
+    mkdir -p "$dir"
 
-    curl -L -o $nixd $url
+    curl -L -o "$nixd" $url
 
-    if ! grep -q 'checksum() {' $nixd; then
+    if ! grep -q 'checksum() {' "$nixd"; then
         echo "Abort. Download is invalid. Is the commit hash / URL valid?" >&2
         return 1
     fi
 
-    chmod 775 $nixd
+    chmod 775 "$nixd"
 
-    if $nixd checksum $nixd $hash_function TEST_CHECKSUM > /dev/null 2>&1; then
+    if "$nixd" checksum "$nixd" $hash_function TEST > /dev/null 2>&1; then
         echo "Abort. Download appears to accept any checksum." >&2
         return 1
     fi
 
-    if $nixd checksum $nixd $hash_function $hash_value; then
+    if "$nixd" checksum "$nixd" $hash_function $hash_value; then
         trap - SIGINT SIGTERM EXIT
         echo "Successfully bootstrapped nixd at $nixd"
         return 0
