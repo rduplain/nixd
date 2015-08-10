@@ -260,4 +260,4 @@ fills the gap between a commissioned operating system and a configured runtime
 for a development team's application stack.
 
 
-Copyright (c) 2012-2013, Ron DuPlain. BSD licensed.
+Copyright (c) 2012-2015, Ron DuPlain. BSD licensed.
