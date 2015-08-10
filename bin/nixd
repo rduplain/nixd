@@ -299,17 +299,21 @@ download_package_resources() {
     # Resources are specified by `exe resources`, providing via stdout newline
     # (\n) delimited URLs with an optional local name, in the format of one of:
     #
-    #     <url>
-    #     <url><space><local name>
+    #     URL
+    #     URL LOCAL_NAME
+    #     URL LOCAL_NAME sha1 SHA1_CHECKSUM
     #
     # For example:
     #
     #     http://example.com/package.tar.gz
     #     http://example.com/1.0/package.tar.gz package-1.0.tar.gz
+    #     http://example.com/1.0/package.tar.gz package-1.0.tar.gz sha1 c0ffee
     #
     # In the first case, the remote name of package.tar.gz is used locally. In
     # the second case, the remote file is downloaded locally to a file named
-    # package-1.0.tar.gz.
+    # package-1.0.tar.gz. In the third case, the local file is also checked to
+    # match the given SHA1 checksum; if it does not match, the download fails
+    # and the file is deleted.
 
     local exe=$1
     shift
@@ -391,14 +395,17 @@ download_resource() {
     if [ ${#tokens[@]} -eq 0 ]; then
         nixd_error "$NIXD_NAME: No argument given to `download_resource`."
         return 3
-    elif [ ${#tokens[@]} -gt 2 ]; then
-        nixd_error "$NIXD_NAME: resource error - more than 2 fields: $resource"
+    elif [ ${#tokens[@]} -eq 3 ] || [ ${#tokens[@]} -gt 4 ]; then
+        nixd_error "$NIXD_NAME: resource error - incorrect format: $resource"
+        nixd_error "URL LOCAL_NAME sha1 SHA1_CHECKSUM"
         return 3
     fi
 
     # Parse tokens.
     local url=${tokens[0]}
     local local_name=${tokens[1]}
+    local checksum_function=${tokens[2]}
+    local checksum_value=${tokens[3]}
 
     # Parse remote name from URL.
     local remote_name="$( basename "$url" )"
@@ -418,6 +425,13 @@ download_resource() {
     else
         nixd_echo "downloading $local_name from $url"
         curl -L -o $local_name $url # Use '-L' to follow redirects.
+        if [ -z "${checksum_function}${checksum_value}" ]; then
+            nixd_echo "no checksum given; using without checking: $local_name"
+        elif ! checksum "$local_name" $checksum_function $checksum_value; then
+            nixd_error "download failed checksum: $local_name"
+            rm -f $local_name
+            return 1
+        fi
     fi
 }
 
@@ -614,6 +628,53 @@ echo_environment() {
     nixd_echo "NIXD_ETC:    $NIXD_ETC"
     nixd_echo "NIXD_SRC:    $NIXD_SRC"
     nixd_echo "NIXD_MIRROR: $NIXD_MIRROR"
+}
+
+checksum() {
+    # Verify checksum of file, exiting non-zero if hash does not match.
+
+    if [ $# -ne 3 ]; then
+        echo "usage: checksum FILENAME sha1|md5 HASH" >&2
+        return 2
+    fi
+
+    local filename=$1
+    local hash_function=$2
+    local hash_value=$3
+    shift 3
+
+    check_for_program openssl
+
+    case "$hash_function" in
+        "sha1" | "md5" )
+            # Note that 'local' itself returns 0.
+            local dgst_output
+            dgst_output=$( openssl dgst -$hash_function $filename )
+            local dgst_exit=$?
+
+            echo "$dgst_output"
+
+            if [ $dgst_exit -ne 0 ]; then
+                nixd_error "dgst failed with non-zero status: $dgst_exit"
+                return $dsgt_exit
+            fi
+
+            local dgst_value=$( echo "$dgst_output" | cut -f 2 -d ' ' )
+            if [ -z "dgst_value" ]; then
+                nixd_error "Unable to parse hash value from openssl dgst call."
+                return 1
+            fi
+
+            if [ "$hash_value" != "$dgst_value" ]; then
+                nixd_error "$filename checksum does not match: $hash_value"
+                return 1
+            fi
+            ;;
+        * )
+            echo "checksum: unknown hash function: $hash_function" >&2
+            return 2
+            ;;
+    esac
 }
 
 check_for_program() {
