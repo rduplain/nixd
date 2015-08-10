@@ -101,12 +101,8 @@ executable:
     cd path/to/your/project
     nixd selfinstall .
 
-[script_examples]: https://github.com/rduplain/nixd/tree/master/lib
-[configuration_examples]: https://github.com/rduplain/nixd/tree/master/examples
-
-Next, add scripts to `nixd/sbin/` to provide packages for your environment. See
-[script examples here][script_examples] and
-[configuration examples here][configuration_examples]. The pattern is:
+Next, add scripts to `nixd/sbin/` to provide packages for your environment.
+The pattern is:
 
 * *check* - exit with status 0 if already installed, non-zero otherwise.
 * *resources* - print required downloads to stdout, one per line (optional).

@@ -1,2 +1,0 @@
-tornado==2.4.1
-websocket-client==0.8.0 # Provides wsdump.py executable.
