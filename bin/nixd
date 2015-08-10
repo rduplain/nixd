@@ -646,7 +646,7 @@ checksum() {
     check_for_program openssl
 
     case "$hash_function" in
-        "sha1" | "md5" )
+        "sha1" | "sha224" | "sha256" | "sha384" | "sha512" | "md5" )
             # Note that 'local' itself returns 0.
             local dgst_output
             dgst_output=$( openssl dgst -$hash_function $filename )
