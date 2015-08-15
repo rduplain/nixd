@@ -53,7 +53,7 @@ main() {
         return 2
     fi
 
-    trap "rm -vf '$nixd'" SIGINT SIGTERM EXIT
+    trap "if [ -e '$nixd' ]; then mv -v '$nixd' '$nixd'.rej; fi" INT TERM EXIT
 
     local url
     case "$git_commit_or_url" in
@@ -83,7 +83,7 @@ main() {
     fi
 
     if "$nixd" checksum "$nixd" $hash_function $hash_value; then
-        trap - SIGINT SIGTERM EXIT
+        trap - INT TERM EXIT
         echo "Successfully bootstrapped nixd at $nixd"
         return 0
     else

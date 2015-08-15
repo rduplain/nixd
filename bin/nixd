@@ -426,15 +426,16 @@ download_resource() {
     if [ -e "$local_name" ]; then
         nixd_echo "using existing $local_name"
     else
+        push_trap reject_file "$local_name"
         nixd_echo "downloading $local_name from $url"
         curl -L -o "$local_name" $url # Use '-L' to follow redirects.
         if [ -z "${checksum_function}${checksum_value}" ]; then
             nixd_echo "no checksum given; using without checking: $local_name"
         elif ! checksum "$local_name" $checksum_function $checksum_value; then
             nixd_error "download failed checksum: $local_name"
-            rm -f "$local_name"
             return 1
         fi
+        pop_trap
     fi
 }
 
@@ -693,6 +694,15 @@ check_for_program() {
             return 3
         fi
     done
+}
+
+reject_file() {
+    # Reject given file, by renaming it with a .rej extension.
+
+    local filepath="$@"
+    if [ -e "$filepath" ]; then
+        mv -v "$filepath" "$filepath".rej
+    fi
 }
 
 pass() {
