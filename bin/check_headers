@@ -32,7 +32,7 @@ PROG=check_headers
 # Build a temporary configure script with GNU autoconf.
 
 for program in date autoconf; do
-    if ( ! which $program > /dev/null ); then
+    if ! which $program > /dev/null; then
         echo "$PROG: requires '$program' program, but could not find it."
         exit 2
     fi

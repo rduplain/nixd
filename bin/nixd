@@ -282,7 +282,7 @@ install_package() {
     mkdir -p $NIXD_VAR/events
 
     nixd_echo "checking..."
-    if ( $exe check ); then
+    if $exe check; then
         nixd_echo "already installed."
     else
         # Essential '&&': execution stops immediately on error with 'set -e'.
@@ -455,7 +455,7 @@ run_package_pretest() {
 
     local result=0
     nixd_echo "running pretest..."
-    if ( $exe pretest ); then
+    if $exe pretest; then
         nixd_echo "pretest passed."
     elif [ $? -eq 127 ]; then
         # Not implemented; still returns 0 in run_package_pretest.
@@ -490,7 +490,7 @@ run_package_install() {
 
     local result=0
     nixd_echo "installing..."
-    if ( $exe install ); then
+    if $exe install; then
         nixd_echo "installed."
     else
         result=$?
@@ -547,7 +547,7 @@ map_scripts() {
             #
             # 1. 'set -e' has curious behavior for deeply nested commands.
             # 2. Enable override of 'set -e' to continue on script failure.
-            if ( $command $exe ); then
+            if $command $exe; then
                 pass
             else
                 # Stop now since an execution failed, returning exit code.
@@ -685,7 +685,7 @@ check_for_program() {
     # for dependencies lazily.
 
     for program in $@; do
-        if ( ! which $program > /dev/null ); then
+        if ! which $program > /dev/null; then
             nixd_error "requires '$program' program, but could not find it."
             return 3
         fi
@@ -727,7 +727,7 @@ install() {
     fi
 
     # Stop now if there's no work to do.
-    if ( map_scripts quick_check $paths > /dev/null 2>&1 ); then
+    if map_scripts quick_check $paths > /dev/null 2>&1; then
         nixd_echo "Everything checks out; no work to do."
         return
     fi
