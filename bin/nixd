@@ -59,6 +59,9 @@ declare NIXD_INVOCATION
 # The name of this executable program, set in main function.
 declare PROG
 
+# Internal stack of shell expressions to call via bash traps when closing nixd.
+declare -a NIXD_TRAPS
+
 usage() {
     # Print nixd program usage to stderr and return 2.
 
@@ -701,18 +704,40 @@ pass() {
 
 # Begin trap functions to run when nixd is finishing execution.
 
-trap_int() {
+nixd_trap_int() {
     # Execute on INT signal.
 
     nixd_echo Interrupted.
 }
 
-trap_term() {
+nixd_trap_term() {
     # Execute on TERM signal.
 
     nixd_echo Terminated.
 }
 
+push_trap() {
+    # Push a shell expression onto nixd bash trap stack.
+
+    local index=${#NIXD_TRAPS[@]}
+    NIXD_TRAPS[$index]="$@;"
+}
+
+pop_trap() {
+    # Pop most recent shell expression from nixd bash trap stack.
+
+    unset NIXD_TRAPS[-1]
+}
+
+reset_traps() {
+    # Reset nixd bash traps, clearing effect of all add_trap calls.
+
+    unset NIXD_TRAPS
+
+    trap 'eval "${NIXD_TRAPS[@]}"; unset NIXD_TRAPS; nixd_trap_int' INT
+    trap 'eval "${NIXD_TRAPS[@]}"; unset NIXD_TRAPS; nixd_trap_term' TERM
+    trap 'eval "${NIXD_TRAPS[@]}"; unset NIXD_TRAPS' EXIT ERR
+}
 
 # Begin user-exposed subcommands.
 
@@ -823,9 +848,8 @@ main() {
     # When nixd gets a full command-line parser, this could look for '-v'.
     NIXD_VERBOSE=${NIXD_VERBOSE:-""}
 
-    # Set traps to be clear why nixd exits.
-    trap trap_int INT
-    trap trap_term TERM
+    # Initialize bash traps.
+    reset_traps
 
     # Exit immediately if a command error or non-zero return occurs.
     set -e
