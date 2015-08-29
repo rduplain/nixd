@@ -736,7 +736,11 @@ push_trap() {
 pop_trap() {
     # Pop most recent shell expression from nixd bash trap stack.
 
-    unset NIXD_TRAPS[-1]
+    # bash 4.3+ supports -1 to get last value,
+    # but nixd supports older versions of bash.
+    local index=${#NIXD_TRAPS[@]}
+    let index=index-1
+    unset NIXD_TRAPS[$index]
 }
 
 reset_traps() {
