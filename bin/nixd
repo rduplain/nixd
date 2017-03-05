@@ -1,5 +1,5 @@
 #!/bin/bash
-# nixd v0.4: automation framework for application environments.
+# nixd v0.5-dev: automation framework for application environments.
 #
 # Copyright (c) 2012-2015, Ron DuPlain
 # All rights reserved.
