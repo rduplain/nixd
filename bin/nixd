@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# nixd v0.5-dev: nixd builds unix environments.
+# nixd v1.0: nixd builds unix environments.
 #
 # Copyright (c) 2012-2018, Ron DuPlain
 # All rights reserved.

@@ -134,8 +134,8 @@ Otherwise, a bootstrap script is available to avoid doing this. Check
 `bin/nixd-bootstrap` into a project repository, and download nixd with:
 
 ```bash
-sha256=1bc4594ab25f71673fc958997852243e5e137863f90de16d8a21a42a999e7b6a
-.nixd/bin/nixd-bootstrap .nixd/bin/nixd v0.4 sha256 $sha256
+sha256=2cfe294fa454d67f31cf71b150aa969b81938e3eb854d45fd2251761a2401be3
+.nixd/bin/nixd-bootstrap .nixd/bin/nixd v1.0 sha256 $sha256
 ```
 
 The goal of nixd is to provide a self-sufficient install process, by which a
