@@ -1,7 +1,7 @@
-# nixd builds unix daemons and environments
+# nixd builds unix environments
 
-nixd builds u**nix** **d**aemons and environments by providing a download/build
-workflow which embeds into any build system.
+nixd builds unix environments by providing a download/build workflow which
+embeds into any build system.
 
 
 ### Project Status
@@ -30,7 +30,8 @@ nixd is checking whether that program runs successfully.
 If the check fails, the program gets called again with predefined subcommands
 to download *resources*, configure, and *install* a given requirement, as
 appropriate. This approach is particularly useful when combining multiple
-programming languages or embedding a service into a project. Simple programs
+programming languages or embedding a service into a project, allowing for
+multiple runtimes to combine into a single u**nix** **d**aemon. Simple programs
 become recipes to fetch, unpack, and configure the necessary tools. These
 recipes are executable specs which are repeatable without having to vendor
 external code into the project repository.
