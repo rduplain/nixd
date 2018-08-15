@@ -11,6 +11,11 @@ infrequent because the project is simple and stable, depending only a version
 of GNU bash which is both widely available and was released more than a decade
 ago.
 
+**Note: Development of nixd is frozen at v1.0.** This repository is made
+available for stability of any existing projects which use it. Development
+continues in nixd's successor, a project called
+[reqd](https://github.com/rduplain/reqd).
+
 
 ### Motivation and Design
 
